@@ -22,9 +22,40 @@ classdef JupyterNotebook
   ##
   ## Run and fill Jupyter Notebooks within GNU Octave. 
   
-  properties
+  properties %(Access = "private")
+    notebook = struct()
   endproperties
 
   methods
+    function obj = JupyterNotebook (notebookFileName)
+      if (nargin != 1)
+        print_usage ();
+      endif
+
+      if (! (ischar (notebookFileName) && isrow (notebookFileName)))
+        error ("JupyterNotebook: notebookFileName must be a string");
+      endif
+
+      obj.notebook = jsondecode(fileread(notebookFileName));
+
+      % Validate the notebook's format according to nbformat: 4.0
+      %%% Should I check for Cells only?
+      % issue a warning if the format is lower that 4.0 
+      if (! (isfield (obj.notebook, "metadata") && 
+             isfield (obj.notebook, "nbformat") &&
+             isfield (obj.notebook, "nbformat_minor") && 
+             isfield (obj.notebook, "cells")))
+        error ("JupyterNotebook: not valid format for Jupyter notebooks");
+      endif
+
+      for i = 1:numel(obj.notebook.cells)
+        if ( ! isfield (obj.notebook.cells{i}, "source"))
+          error ("JupyterNotebook: cells must contain a \"source\" field");
+        endif
+        if ( ! isfield (obj.notebook.cells{i}, "cell_type"))
+          error ("JupyterNotebook: cells must contain a \"cell_type\" field");
+        endif
+      endfor
+    endfunction
   endmethods
 endclassdef
