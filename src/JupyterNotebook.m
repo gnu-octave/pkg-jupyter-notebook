@@ -57,5 +57,32 @@ classdef JupyterNotebook
         endif
       endfor
     endfunction
+
+    function generateOctaveScript (obj, scriptFileName)
+      if (nargin != 2)
+        print_usage ();
+      endif
+
+      if (! (ischar (scriptFileName) && isrow (scriptFileName)))
+        error ("JupyterNotebook: scriptFileName must be a string");
+      endif
+
+      fhandle = fopen(scriptFileName, "w");
+
+      for i = 1:numel(obj.notebook.cells)
+        if (strcmp(obj.notebook.cells{i}.cell_type, "markdown"))
+          fputs (fhandle, "\n#{\n");
+        endif
+
+        for k = 1:numel(obj.notebook.cells{i}.source)
+          fputs (fhandle, obj.notebook.cells{i}.source{k});
+        endfor
+
+        if (strcmp(obj.notebook.cells{i}.cell_type, "markdown"))
+          fputs (fhandle, "\n#}\n");
+        endif
+        fputs (fhandle, "\n");
+      endfor
+    endfunction
   endmethods
 endclassdef
