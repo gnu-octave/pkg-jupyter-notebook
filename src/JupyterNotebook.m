@@ -22,7 +22,7 @@ classdef JupyterNotebook
   ##
   ## Run and fill Jupyter Notebooks within GNU Octave. 
   
-  properties %(Access = "private")
+  properties
     notebook = struct()
   endproperties
 
@@ -38,14 +38,17 @@ classdef JupyterNotebook
 
       obj.notebook = jsondecode(fileread(notebookFileName));
 
-      % Validate the notebook's format according to nbformat: 4.0
-      %%% Should I check for Cells only?
-      % issue a warning if the format is lower that 4.0 
+      % Validate the notebook's format according to nbformat: 4.0 
       if (! (isfield (obj.notebook, "metadata") && 
              isfield (obj.notebook, "nbformat") &&
              isfield (obj.notebook, "nbformat_minor") && 
              isfield (obj.notebook, "cells")))
         error ("JupyterNotebook: not valid format for Jupyter notebooks");
+      endif
+
+      % issue a warning if the format is lower than 4.0
+      if (obj.notebook.nbformat < 4)
+        warning ("JupyterNotebook: nbformat versions lower than 4.0 are not supported")
       endif
 
       for i = 1:numel(obj.notebook.cells)
@@ -83,6 +86,7 @@ classdef JupyterNotebook
         endif
         fputs (fhandle, "\n");
       endfor
+      fclose (fhandle);
     endfunction
   endmethods
 endclassdef
