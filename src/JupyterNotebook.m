@@ -88,5 +88,22 @@ classdef JupyterNotebook
       endfor
       fclose (fhandle);
     endfunction
+
+    function generateNotebook (obj, notebookFileName)
+      if (nargin != 2)
+        print_usage ();
+      endif
+
+      if (! (ischar (notebookFileName) && isrow (notebookFileName)))
+        error ("JupyterNotebook: notebookFileName must be a string");
+      endif
+
+      fhandle = fopen(notebookFileName, "w");
+
+      fputs (fhandle, jsonencode (obj.notebook, "ConvertInfAndNaN", false,
+                                  "PrettyPrint", true));
+
+      fclose (fhandle);
+    endfunction
   endmethods
 endclassdef
