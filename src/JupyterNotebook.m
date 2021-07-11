@@ -112,6 +112,27 @@ classdef JupyterNotebook < handle
   endmethods
 
   methods (Access = "private")
+    function retVal = evalCode (__obj__, __code__)
+      if (nargin != 2)
+        print_usage ();
+      endif
+
+      if (! (ischar (__code__) && isrow (__code__)))
+        error ("JupyterNotebook: code must be a string");
+      endif
+
+      if (isempty (__code__))
+        return;
+      endif
+
+      __obj__.evalContext ("load");
+
+      retVal = evalc (__code__);
+
+      __obj__.evalContext ("save");
+
+    endfunction
+
     function evalContext (obj, op)
       if (op == "save")
         ## Get variable names
