@@ -15,7 +15,7 @@
 ## <https://www.gnu.org/licenses/>.
 
 
-classdef JupyterNotebook
+classdef JupyterNotebook < handle
 
   ## -*- texinfo -*- 
   ## @deftypefn  {} {@var{notebook} =} JupyterNotebook ()
@@ -24,6 +24,10 @@ classdef JupyterNotebook
   
   properties
     notebook = struct()
+  endproperties
+
+  properties (Access = "private")
+    context = struct()
   endproperties
 
   methods
@@ -106,4 +110,25 @@ classdef JupyterNotebook
       fclose (fhandle);
     endfunction
   endmethods
+
+  methods (Access = "private")
+    function evalContext (obj, op)
+      if (op == "save")
+        ## Get variable names
+        var_names = {evalin("caller", "whos").name};
+
+        ## Store all variables to context
+        for i = 1:length (var_names)
+          if (! any (strcmp (var_names{i}, forbidden_var_names)))
+            obj.context.(var_names{i}) = evalin ("caller", var_names{i});
+          endif
+        endfor
+      elseif (op == "load")
+        for [val, key] = obj.context
+          assignin ("caller", key, val);
+        endfor
+      endif
+    endfunction
+  endmethods
+
 endclassdef
