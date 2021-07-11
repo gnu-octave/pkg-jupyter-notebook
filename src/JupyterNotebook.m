@@ -129,12 +129,22 @@ classdef JupyterNotebook < handle
 
       retVal = evalc (__code__);
 
+      # Handle the ans var in the context
+      if (length (retVal) > 6 && retVal(1:3) == "ans")
+        __obj__.context.ans = retVal(7:length (retVal));
+      endif
+
       __obj__.evalContext ("save");
 
     endfunction
 
     function evalContext (obj, op)
       if (op == "save")
+        # Handle the ans var in the context
+        obj.context = struct("ans", obj.context.ans);
+        
+        forbidden_var_names = {"__code__", "__obj__", "ans"};
+
         ## Get variable names
         var_names = {evalin("caller", "whos").name};
 
