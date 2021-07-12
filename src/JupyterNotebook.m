@@ -127,7 +127,7 @@ classdef JupyterNotebook < handle
 
       __obj__.evalContext ("load");
 
-      retVal = evalc (__code__);
+      retVal = evalc (__code__, "printf (\"error: \"); printf (lasterror.message)");
 
       # Handle the ans var in the context
       if (length (retVal) > 6 && retVal(1:3) == "ans")
