@@ -27,7 +27,7 @@ classdef JupyterNotebook < handle
   endproperties
 
   properties (Access = "private")
-    context = struct()
+    context = struct("ans", "")
   endproperties
 
   methods
