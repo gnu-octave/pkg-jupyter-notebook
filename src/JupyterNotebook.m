@@ -109,6 +109,43 @@ classdef JupyterNotebook < handle
 
       fclose (fhandle);
     endfunction
+
+    function run (obj, cell_index)
+      if (nargin != 2)
+        print_usage ();
+      endif
+
+      if (! (isscalar (cell_index) && ! islogical (cell_index) &&
+          mod (cell_index, 1) == 0 && cell_index > 0))
+        error ("JupyterNotebook: cell_index must be a scalar positive integer");
+      endif
+
+      if (cell_index > length (obj.notebook.cells))
+        error ("JupyterNotebook: cell_index is out of bound");
+      endif
+
+      obj.notebook.cells{cell_index}.outputs = {};
+
+      stream_output = struct ("name", "stdout", "output_type", "stream");
+     
+      for i = 1 : numel (obj.notebook.cells{cell_index}.source)
+        output_line = obj.evalCode (obj.notebook.cells{cell_index}.source{i});
+        
+        if (isempty (output_line))
+          continue;
+        endif
+
+        # Split lines into separate elements in the "text" cell
+        output_lines = strsplit (output_line, "\n");     
+        for k = 1 : numel (output_lines)
+          stream_output.text {end + 1} = output_lines{k};
+        endfor
+      endfor
+      
+      if (isfield (stream_output, "text"))
+        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+      endif 
+    endfunction
   endmethods
 
   methods (Access = "private")
