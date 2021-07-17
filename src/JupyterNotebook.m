@@ -167,7 +167,7 @@ classdef JupyterNotebook < handle
       retVal = evalc (__code__, "printf (\"error: \"); printf (lasterror.message)");
 
       # Handle the ans var in the context
-      if (length (retVal) > 6 && retVal(1:3) == "ans")
+      if (length (retVal) > 6 && strcmp (retVal(1:3), "ans"))
         __obj__.context.ans = retVal(7:length (retVal));
       endif
 
@@ -176,7 +176,7 @@ classdef JupyterNotebook < handle
     endfunction
 
     function evalContext (obj, op)
-      if (op == "save")
+      if (strcmp (op, "save"))
         # Handle the ans var in the context
         obj.context = struct("ans", obj.context.ans);
         
@@ -191,7 +191,7 @@ classdef JupyterNotebook < handle
             obj.context.(var_names{i}) = evalin ("caller", var_names{i});
           endif
         endfor
-      elseif (op == "load")
+      elseif (strcmp (op, "load"))
         for [val, key] = obj.context
           assignin ("caller", key, val);
         endfor
