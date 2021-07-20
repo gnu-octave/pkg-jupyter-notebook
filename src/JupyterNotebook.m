@@ -124,7 +124,16 @@ classdef JupyterNotebook < handle
         error ("JupyterNotebook: cell_index is out of bound");
       endif
 
+      # Remove previous outputs
       obj.notebook.cells{cell_index}.outputs = {};
+      
+      # Remember previously opened figures
+      fig_ids = findall (0, "type", "figure");
+
+      # Create a new figure, if there are existing plots
+      if (! isempty (fig_ids))
+        newFig = figure ();
+      endif
 
       stream_output = struct ("name", "stdout", "output_type", "stream");
      
@@ -139,12 +148,25 @@ classdef JupyterNotebook < handle
         output_lines = strsplit (output_line, "\n");     
         for k = 1 : numel (output_lines)
           stream_output.text {end + 1} = output_lines{k};
-        endfor
+        endfor  
       endfor
-      
+
       if (isfield (stream_output, "text"))
         obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
-      endif 
+      endif
+
+      # Check for newly created figures
+      fig_ids_new = setdiff (findall (0, "type", "figure"), fig_ids);
+
+      # If there are existing plots and newFig is empty, delete it
+      if (exist ("newFig") && isempty (get (newFig, "children")))
+        delete (newFig);
+      else
+        for i = 1 : numel (fig_ids_new)
+          obj.embedImage (cell_index, fig_ids_new (i), "png");
+          delete (fig_ids_new(i));
+        endfor
+      endif
     endfunction
   endmethods
 
