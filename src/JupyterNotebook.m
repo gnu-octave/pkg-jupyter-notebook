@@ -219,6 +219,19 @@ classdef JupyterNotebook < handle
         endfor
       endif
     endfunction
+
+    function embedImage (obj, cell_index, figHandle, imageFormat)
+      print (figHandle, "temp.png", "-dpng");
+      fhandle = fopen ("temp.png");
+      encodedImage = base64_encode (uint8 (fread (fhandle)));
+      display_output = struct ("output_type", "display_data", "metadata", struct (),
+                              "data", struct ("text/plain", 
+                                              {"<IPython.core.display.Image object>"},
+                                              "image/png", encodedImage));
+      obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
+      fclose(fhandle);
+      delete ("temp.png");
+    endfunction
   endmethods
 
 endclassdef
