@@ -40,7 +40,7 @@ classdef JupyterNotebook < handle
         error ("JupyterNotebook: notebookFileName must be a string");
       endif
 
-      obj.notebook = jsondecode(fileread(notebookFileName));
+      obj.notebook = jsondecode (fileread (notebookFileName));
 
       % Validate the notebook's format according to nbformat: 4.0 
       if (! (isfield (obj.notebook, "metadata") && 
@@ -61,6 +61,11 @@ classdef JupyterNotebook < handle
         endif
         if ( ! isfield (obj.notebook.cells{i}, "cell_type"))
           error ("JupyterNotebook: cells must contain a \"cell_type\" field");
+        endif
+        # Handle when null json values are decoded into empty arrays 
+        if (isfield (obj.notebook.cells{i}, "execution_count") &&
+            numel (obj.notebook.cells{i}.execution_count) == 0)
+          obj.notebook.cells{i}.execution_count = 1;    
         endif
       endfor
     endfunction
