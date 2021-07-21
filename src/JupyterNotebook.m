@@ -146,9 +146,14 @@ classdef JupyterNotebook < handle
 
         # Split lines into separate elements in the "text" cell
         output_lines = strsplit (output_line, "\n");     
-        for k = 1 : numel (output_lines)
-          stream_output.text {end + 1} = output_lines{k};
-        endfor  
+        if (numel (output_lines) == 1)
+          stream_output.text{end + 1} = [output_lines{1} "\n"];
+        else
+          for k = 1 : numel (output_lines)
+            stream_output.text{end + 1} = [output_lines{k} "\n"];
+            stream_output.text{end + 1} = "\n";
+          endfor  
+        endif
       endfor
 
       if (isfield (stream_output, "text"))
@@ -196,7 +201,7 @@ classdef JupyterNotebook < handle
 
       __obj__.evalContext ("load");
 
-      retVal = evalc (__code__, "printf (\"error: \"); printf (lasterror.message)");
+      retVal = strtrim (evalc (__code__, "printf (\"error: \"); printf (lasterror.message)"));
 
       # Handle the ans var in the context
       if (length (retVal) > 6 && strcmp (retVal(1:3), "ans"))
