@@ -42,7 +42,7 @@ classdef JupyterNotebook < handle
 
       obj.notebook = jsondecode (fileread (notebookFileName));
 
-      % Validate the notebook's format according to nbformat: 4.0 
+      # Validate the notebook's format according to nbformat: 4.0 
       if (! (isfield (obj.notebook, "metadata") && 
              isfield (obj.notebook, "nbformat") &&
              isfield (obj.notebook, "nbformat_minor") && 
@@ -50,12 +50,18 @@ classdef JupyterNotebook < handle
         error ("JupyterNotebook: not valid format for Jupyter notebooks");
       endif
 
-      % issue a warning if the format is lower than 4.0
+      # Issue a warning if the format is lower than 4.0
       if (obj.notebook.nbformat < 4)
         warning ("JupyterNotebook: nbformat versions lower than 4.0 are not supported")
       endif
 
-      for i = 1:numel(obj.notebook.cells)
+      # Handle the case if there is only one cell.
+      # Make "obj.notebook.cells" a cell of structs to match the format 
+      if (numel (obj.notebook.cells) == 1)
+        obj.notebook.cells = {obj.notebook.cells};
+      endif
+
+      for i = 1 : numel (obj.notebook.cells)
         if ( ! isfield (obj.notebook.cells{i}, "source"))
           error ("JupyterNotebook: cells must contain a \"source\" field");
         endif
