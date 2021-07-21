@@ -168,6 +168,16 @@ classdef JupyterNotebook < handle
         endfor
       endif
     endfunction
+
+    function runAll (obj)
+      if (nargin != 1)
+        print_usage ();
+      endif
+      
+      for i = 1 : numel (obj.notebook.cells)
+        obj.run(i);
+      endfor
+    endfunction
   endmethods
 
   methods (Access = "private")
