@@ -124,6 +124,10 @@ classdef JupyterNotebook < handle
         error ("JupyterNotebook: cell_index is out of bound");
       endif
 
+      if (! strcmp (obj.notebook.cells{cell_index}.cell_type, "code"))
+        return;
+      endif
+
       # Remove previous outputs
       obj.notebook.cells{cell_index}.outputs = {};
       
