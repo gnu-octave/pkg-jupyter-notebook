@@ -172,6 +172,7 @@ classdef JupyterNotebook < handle
         delete (newFig);
       else
         for i = 1 : numel (fig_ids_new)
+          figure (fig_ids_new (i), "visible", "off"); 
           obj.embedImage (cell_index, fig_ids_new (i), "svg");
           delete (fig_ids_new(i));
         endfor
