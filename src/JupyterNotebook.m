@@ -61,6 +61,13 @@ classdef JupyterNotebook < handle
         obj.notebook.cells = {obj.notebook.cells};
       endif
 
+      # Handle the case if the cells have the same keys
+      # Make "obj.notebook.cells" a cell of structs instead of struct array
+      # to unify the indexing method
+      if (isstruct (obj.notebook.cells))
+        obj.notebook.cells = num2cell (obj.notebook.cells);
+      endif
+
       for i = 1 : numel (obj.notebook.cells)
         if ( ! isfield (obj.notebook.cells{i}, "source"))
           error ("JupyterNotebook: cells must contain a \"source\" field");
@@ -184,7 +191,7 @@ classdef JupyterNotebook < handle
       else
         for i = 1 : numel (fig_ids_new)
           figure (fig_ids_new (i), "visible", "off"); 
-          obj.embedImage (cell_index, fig_ids_new (i), "svg");
+          obj.embedImage (cell_index, fig_ids_new (i), "png");
           delete (fig_ids_new(i));
         endfor
       endif
