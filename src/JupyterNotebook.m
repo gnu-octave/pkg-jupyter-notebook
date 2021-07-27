@@ -148,6 +148,21 @@ classdef JupyterNotebook < handle
 
       # Remove previous outputs
       obj.notebook.cells{cell_index}.outputs = {};
+
+      if (isempty (obj.notebook.cells{cell_index}.source))
+        return;
+      endif
+
+      # Parse plot magic (must be the first line in the cell)
+      printOptions.imageFormat = "png";
+      if (strncmpi (obj.notebook.cells{cell_index}.source{1}, "%plot", 5))
+        magics = strsplit (strtrim (obj.notebook.cells{cell_index}.source{1}));
+        for i = 1 : numel (magics)
+          if (strcmp (magics{i}, "-f") && i < numel (magics))
+            printOptions.imageFormat = magics{i+1};
+          endif
+        endfor
+      endif
       
       # Remember previously opened figures
       fig_ids = findall (0, "type", "figure");
@@ -178,7 +193,7 @@ classdef JupyterNotebook < handle
       else
         for i = 1 : numel (fig_ids_new)
           figure (fig_ids_new (i), "visible", "off"); 
-          obj.embedImage (cell_index, fig_ids_new (i), "png");
+          obj.embedImage (cell_index, fig_ids_new (i), printOptions);
           delete (fig_ids_new(i));
         endfor
       endif
@@ -251,8 +266,8 @@ classdef JupyterNotebook < handle
       endif
     endfunction
 
-    function embedImage (obj, cell_index, figHandle, imageFormat)
-      if (strcmp (imageFormat, "png"))
+    function embedImage (obj, cell_index, figHandle, printOptions)
+      if (strcmpi (printOptions.imageFormat, "png"))
         print (figHandle, "temp.png", "-dpng");
         encodedImage = base64_encode (uint8 (fileread ("temp.png")));
         display_output = struct ("output_type", "display_data", "metadata", struct (),
@@ -261,7 +276,7 @@ classdef JupyterNotebook < handle
                                                 "image/png", encodedImage));
         obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
         delete ("temp.png");
-      elseif (strcmp (imageFormat, "svg"))
+      elseif (strcmpi (printOptions.imageFormat, "svg"))
         print (figHandle, "temp.svg", "-dsvg");
         display_output = struct ("output_type", "display_data", "metadata", struct (),
                                  "data", struct ());
