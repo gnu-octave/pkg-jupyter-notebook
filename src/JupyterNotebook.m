@@ -214,10 +214,15 @@ classdef JupyterNotebook < handle
 
       retVal = strtrim (evalc (__code__, "printf (\"error: \"); printf (lasterror.message)"));
 
-      # Handle the ans var in the context
-      #if (length (retVal) > 6 && strcmp (retVal(1:3), "ans"))
-      #  __obj__.context.ans = retVal(7:length (retVal));
-      #endif
+      # Handle the "ans" var in the context
+      start_index = rindex (retVal, "ans =") + 6;
+      if (start_index != 6 && start_index <= length (retVal))
+        end_index = start_index;
+        while (retVal(end_index) != "\n" && end_index < length (retVal))
+          end_index += 1;
+        endwhile
+        __obj__.context.ans = retVal(start_index:end_index);
+      endif
 
       __obj__.evalContext ("save");
 
