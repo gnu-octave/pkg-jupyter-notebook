@@ -158,25 +158,12 @@ classdef JupyterNotebook < handle
       endif
 
       stream_output = struct ("name", "stdout", "output_type", "stream");
-     
-      for i = 1 : numel (obj.notebook.cells{cell_index}.source)
-        output_line = obj.evalCode (obj.notebook.cells{cell_index}.source{i});
-        
-        if (isempty (output_line))
-          continue;
-        endif
 
-        # Split lines into separate elements in the "text" cell
-        output_lines = strsplit (output_line, "\n");     
-        if (numel (output_lines) == 1)
-          stream_output.text{end + 1} = [output_lines{1} "\n"];
-        else
-          for k = 1 : numel (output_lines)
-            stream_output.text{end + 1} = [output_lines{k} "\n"];
-            stream_output.text{end + 1} = "\n";
-          endfor  
-        endif
-      endfor
+      output_lines = obj.evalCode (strjoin (obj.notebook.cells{cell_index}.source));
+
+      if (! isempty(output_lines))
+          stream_output.text = {output_lines};
+      endif
 
       if (isfield (stream_output, "text"))
         obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
@@ -214,12 +201,13 @@ classdef JupyterNotebook < handle
         print_usage ();
       endif
 
-      if (! (ischar (__code__) && isrow (__code__)))
-        error ("JupyterNotebook: code must be a string");
+      if (isempty (__code__))
+        retVal = [];
+        return;
       endif
 
-      if (isempty (__code__))
-        return;
+      if (! (ischar (__code__) && isrow (__code__)))
+        error ("JupyterNotebook: code must be a string");
       endif
 
       __obj__.evalContext ("load");
@@ -227,9 +215,9 @@ classdef JupyterNotebook < handle
       retVal = strtrim (evalc (__code__, "printf (\"error: \"); printf (lasterror.message)"));
 
       # Handle the ans var in the context
-      if (length (retVal) > 6 && strcmp (retVal(1:3), "ans"))
-        __obj__.context.ans = retVal(7:length (retVal));
-      endif
+      #if (length (retVal) > 6 && strcmp (retVal(1:3), "ans"))
+      #  __obj__.context.ans = retVal(7:length (retVal));
+      #endif
 
       __obj__.evalContext ("save");
 
