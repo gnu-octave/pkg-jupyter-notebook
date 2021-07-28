@@ -273,6 +273,13 @@ classdef JupyterNotebook < handle
         embedSVGImage (obj, cell_index, figHandle)
       elseif (strcmpi (printOptions.imageFormat, "jpg"))
         embedJPGImage (obj, cell_index, figHandle)
+      else
+        error_text = {["Cannot embed the \'" ...
+                        printOptions.imageFormat "\' image format\n"]};
+        stream_output = struct ("name", "stderr", "output_type", "stream");
+        # Use dot notation to avoid making a struct array
+        stream_output.text = error_text;
+        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
       endif
     endfunction
 
