@@ -271,6 +271,8 @@ classdef JupyterNotebook < handle
         embedPNGImage (obj, cell_index, figHandle)
       elseif (strcmpi (printOptions.imageFormat, "svg"))
         embedSVGImage (obj, cell_index, figHandle)
+      elseif (strcmpi (printOptions.imageFormat, "jpg"))
+        embedJPGImage (obj, cell_index, figHandle)
       endif
     endfunction
 
@@ -294,6 +296,17 @@ classdef JupyterNotebook < handle
       display_output.data.("text/plain") = {"<IPython.core.display.SVG object>"};                                        
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
       delete ("temp.svg");
+    endfunction
+
+    function embedJPGImage (obj, cell_index, figHandle)
+      print (figHandle, "temp.jpg", "-djpg");
+      encodedImage = base64_encode (uint8 (fileread ("temp.jpg")));
+      display_output = struct ("output_type", "display_data", "metadata", struct (),
+                              "data", struct ("text/plain", 
+                                              {"<IPython.core.display.Image object>"},
+                                              "image/jpeg", encodedImage));
+      obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
+      delete ("temp.jpg");
     endfunction
   endmethods
 
