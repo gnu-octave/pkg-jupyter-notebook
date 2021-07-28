@@ -268,24 +268,32 @@ classdef JupyterNotebook < handle
 
     function embedImage (obj, cell_index, figHandle, printOptions)
       if (strcmpi (printOptions.imageFormat, "png"))
-        print (figHandle, "temp.png", "-dpng");
-        encodedImage = base64_encode (uint8 (fileread ("temp.png")));
-        display_output = struct ("output_type", "display_data", "metadata", struct (),
-                                "data", struct ("text/plain", 
-                                                {"<IPython.core.display.Image object>"},
-                                                "image/png", encodedImage));
-        obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
-        delete ("temp.png");
+        embedPNGImage (obj, cell_index, figHandle)
       elseif (strcmpi (printOptions.imageFormat, "svg"))
-        print (figHandle, "temp.svg", "-dsvg");
-        display_output = struct ("output_type", "display_data", "metadata", struct (),
-                                 "data", struct ());
-        # Use dot notation to avoid making a struct array
-        display_output.data.("image/svg+xml") = strsplit (fileread ("temp.svg"), "\n");
-        display_output.data.("text/plain") = {"<IPython.core.display.SVG object>"};                                        
-        obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
-        delete ("temp.svg");
+        embedSVGImage (obj, cell_index, figHandle)
       endif
+    endfunction
+
+    function embedPNGImage (obj, cell_index, figHandle)
+      print (figHandle, "temp.png", "-dpng");
+      encodedImage = base64_encode (uint8 (fileread ("temp.png")));
+      display_output = struct ("output_type", "display_data", "metadata", struct (),
+                              "data", struct ("text/plain", 
+                                              {"<IPython.core.display.Image object>"},
+                                              "image/png", encodedImage));
+      obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
+      delete ("temp.png");
+    endfunction
+
+    function embedSVGImage (obj, cell_index, figHandle)
+      print (figHandle, "temp.svg", "-dsvg");
+      display_output = struct ("output_type", "display_data", "metadata", struct (),
+                                "data", struct ());
+      # Use dot notation to avoid making a struct array
+      display_output.data.("image/svg+xml") = strsplit (fileread ("temp.svg"), "\n");
+      display_output.data.("text/plain") = {"<IPython.core.display.SVG object>"};                                        
+      obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
+      delete ("temp.svg");
     endfunction
   endmethods
 
