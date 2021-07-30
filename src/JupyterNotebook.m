@@ -153,14 +153,20 @@ classdef JupyterNotebook < handle
         return;
       endif
 
-      # Parse plot magic
+      # Default values for printOptions
       printOptions.imageFormat = "png";
+      printOptions.resolution = "150";
+
+      # Parse plot magic
       for j = 1 : numel (obj.notebook.cells{cell_index}.source)
         if (strncmpi (obj.notebook.cells{cell_index}.source{j}, "%plot", 5))
           magics = strsplit (strtrim (obj.notebook.cells{cell_index}.source{j}));
           for i = 1 : numel (magics)
             if (strcmp (magics{i}, "-f") && i < numel (magics))
               printOptions.imageFormat = magics{i+1};
+            endif
+            if (strcmp (magics{i}, "-r") && i < numel (magics))
+              printOptions.resolution = magics{i+1};
             endif
           endfor
         endif
@@ -277,13 +283,23 @@ classdef JupyterNotebook < handle
         obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
         return;
       endif
+
+      # Check if the resolution is correct
+      if (isempty (str2num (printOptions.resolution)))
+        error_text = {"A number is required for -r, not a string"};
+        stream_output = struct ("name", "stderr", "output_type", "stream");
+        # Use dot notation to avoid making a struct array
+        stream_output.text = error_text;
+        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        return;
+      endif
       
       if (strcmpi (printOptions.imageFormat, "png"))
-        embedPNGImage (obj, cell_index, figHandle)
+        embedPNGImage (obj, cell_index, figHandle, printOptions);
       elseif (strcmpi (printOptions.imageFormat, "svg"))
-        embedSVGImage (obj, cell_index, figHandle)
+        embedSVGImage (obj, cell_index, figHandle, printOptions);
       elseif (strcmpi (printOptions.imageFormat, "jpg"))
-        embedJPGImage (obj, cell_index, figHandle)
+        embedJPGImage (obj, cell_index, figHandle, printOptions);
       else
         error_text = {["Cannot embed the \'" ...
                         printOptions.imageFormat "\' image format\n"]};
@@ -294,8 +310,8 @@ classdef JupyterNotebook < handle
       endif
     endfunction
 
-    function embedPNGImage (obj, cell_index, figHandle)
-      print (figHandle, "temp.png", "-dpng");
+    function embedPNGImage (obj, cell_index, figHandle, printOptions)
+      print (figHandle, "temp.png", "-dpng", ["-r" printOptions.resolution]);
       encodedImage = base64_encode (uint8 (fileread ("temp.png")));
       display_output = struct ("output_type", "display_data", "metadata", struct (),
                               "data", struct ("text/plain", 
@@ -305,8 +321,8 @@ classdef JupyterNotebook < handle
       delete ("temp.png");
     endfunction
 
-    function embedSVGImage (obj, cell_index, figHandle)
-      print (figHandle, "temp.svg", "-dsvg");
+    function embedSVGImage (obj, cell_index, figHandle, printOptions)
+      print (figHandle, "temp.svg", "-dsvg", ["-r" printOptions.resolution]);
       display_output = struct ("output_type", "display_data", "metadata", struct (),
                                 "data", struct ());
       # Use dot notation to avoid making a struct array
@@ -316,8 +332,8 @@ classdef JupyterNotebook < handle
       delete ("temp.svg");
     endfunction
 
-    function embedJPGImage (obj, cell_index, figHandle)
-      print (figHandle, "temp.jpg", "-djpg");
+    function embedJPGImage (obj, cell_index, figHandle, printOptions)
+      print (figHandle, "temp.jpg", "-djpg", ["-r" printOptions.resolution]);
       encodedImage = base64_encode (uint8 (fileread ("temp.jpg")));
       display_output = struct ("output_type", "display_data", "metadata", struct (),
                               "data", struct ("text/plain", 
