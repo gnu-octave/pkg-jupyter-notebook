@@ -269,6 +269,15 @@ classdef JupyterNotebook < handle
     endfunction
 
     function embedImage (obj, cell_index, figHandle, printOptions)
+      if (isempty (get (figHandle, "children")))
+        error_text = {"The figure is empty!"};
+        stream_output = struct ("name", "stderr", "output_type", "stream");
+        # Use dot notation to avoid making a struct array
+        stream_output.text = error_text;
+        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        return;
+      endif
+      
       if (strcmpi (printOptions.imageFormat, "png"))
         embedPNGImage (obj, cell_index, figHandle)
       elseif (strcmpi (printOptions.imageFormat, "svg"))
