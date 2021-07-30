@@ -153,17 +153,19 @@ classdef JupyterNotebook < handle
         return;
       endif
 
-      # Parse plot magic (must be the first line in the cell)
+      # Parse plot magic
       printOptions.imageFormat = "png";
-      if (strncmpi (obj.notebook.cells{cell_index}.source{1}, "%plot", 5))
-        magics = strsplit (strtrim (obj.notebook.cells{cell_index}.source{1}));
-        for i = 1 : numel (magics)
-          if (strcmp (magics{i}, "-f") && i < numel (magics))
-            printOptions.imageFormat = magics{i+1};
-          endif
-        endfor
-      endif
-      
+      for j = 1 : numel (obj.notebook.cells{cell_index}.source)
+        if (strncmpi (obj.notebook.cells{cell_index}.source{j}, "%plot", 5))
+          magics = strsplit (strtrim (obj.notebook.cells{cell_index}.source{j}));
+          for i = 1 : numel (magics)
+            if (strcmp (magics{i}, "-f") && i < numel (magics))
+              printOptions.imageFormat = magics{i+1};
+            endif
+          endfor
+        endif
+      endfor
+
       # Remember previously opened figures
       fig_ids = findall (0, "type", "figure");
 
