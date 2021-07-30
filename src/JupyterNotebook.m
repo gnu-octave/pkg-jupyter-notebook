@@ -162,10 +162,12 @@ classdef JupyterNotebook < handle
         if (strncmpi (obj.notebook.cells{cell_index}.source{j}, "%plot", 5))
           magics = strsplit (strtrim (obj.notebook.cells{cell_index}.source{j}));
           for i = 1 : numel (magics)
-            if (strcmp (magics{i}, "-f") && i < numel (magics))
+            if ((strcmp (magics{i}, "-f") || (strcmp (magics{i}, "--format")) &&
+                i < numel (magics))
               printOptions.imageFormat = magics{i+1};
-            endif
-            if (strcmp (magics{i}, "-r") && i < numel (magics))
+            endif 
+            if ((strcmp (magics{i}, "-r") || (strcmp (magics{i}, "--resolution"))) &&
+                i < numel (magics))
               printOptions.resolution = magics{i+1};
             endif
           endfor
