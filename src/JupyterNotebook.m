@@ -201,19 +201,19 @@ classdef JupyterNotebook < handle
         obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
       endif
 
-      # Check for newly created figures
-      fig_ids_new = setdiff (findall (0, "type", "figure"), fig_ids);
-
       # If there are existing plots and newFig is empty, delete it
       if (exist ("newFig") && isempty (get (newFig, "children")))
         delete (newFig);
-      else
-        for i = 1 : numel (fig_ids_new)
-          figure (fig_ids_new (i), "visible", "off"); 
-          obj.embedImage (cell_index, fig_ids_new (i), printOptions);
-          delete (fig_ids_new(i));
-        endfor
       endif
+
+      # Check for newly created figures
+      fig_ids_new = setdiff (findall (0, "type", "figure"), fig_ids);
+
+      for i = 1 : numel (fig_ids_new)
+        figure (fig_ids_new (i), "visible", "off"); 
+        obj.embedImage (cell_index, fig_ids_new (i), printOptions);
+        delete (fig_ids_new(i));
+      endfor
     endfunction
 
     function runAll (obj)
