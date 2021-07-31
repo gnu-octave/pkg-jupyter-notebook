@@ -156,19 +156,26 @@ classdef JupyterNotebook < handle
       # Default values for printOptions
       printOptions.imageFormat = "png";
       printOptions.resolution = "150";
+      # The default width and height in Jupyter notebook
+      printOptions.width = "640";
+      printOptions.height = "480";
 
       # Parse plot magic
       for j = 1 : numel (obj.notebook.cells{cell_index}.source)
         if (strncmpi (obj.notebook.cells{cell_index}.source{j}, "%plot", 5))
           magics = strsplit (strtrim (obj.notebook.cells{cell_index}.source{j}));
           for i = 1 : numel (magics)
-            if ((strcmp (magics{i}, "-f") || (strcmp (magics{i}, "--format")) &&
+            if ((strcmp (magics{i}, "-f") || (strcmp (magics{i}, "--format"))) &&
                 i < numel (magics))
               printOptions.imageFormat = magics{i+1};
             endif 
             if ((strcmp (magics{i}, "-r") || (strcmp (magics{i}, "--resolution"))) &&
                 i < numel (magics))
               printOptions.resolution = magics{i+1};
+            endif
+            if ((strcmp (magics{i}, "-w") || (strcmp (magics{i}, "--width"))) &&
+                i < numel (magics))
+              printOptions.width = magics{i+1};
             endif
           endfor
         endif
@@ -288,13 +295,31 @@ classdef JupyterNotebook < handle
 
       # Check if the resolution is correct
       if (isempty (str2num (printOptions.resolution)))
-        error_text = {"A number is required for -r, not a string"};
+        error_text = {"A number is required for resolution, not a string"};
         stream_output = struct ("name", "stderr", "output_type", "stream");
         # Use dot notation to avoid making a struct array
         stream_output.text = error_text;
         obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
         return;
       endif
+
+      # Check if the width is correct
+      if (isempty (str2num (printOptions.width)))
+        error_text = {"A number is required for width, not a string"};
+        stream_output = struct ("name", "stderr", "output_type", "stream");
+        # Use dot notation to avoid making a struct array
+        stream_output.text = error_text;
+        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        return;
+      endif
+
+      # Modify width and height of the image
+      # Divide the desired width or height by the resolution 
+      # to get the required number of inches and set it in paperposition 
+      set (figHandle, "paperposition",
+           [get(figHandle, "paperposition")(1:2), ... 
+            str2num(printOptions.width)/str2num(printOptions.resolution), ...
+            str2num(printOptions.height)/str2num(printOptions.resolution)]); 
       
       if (strcmpi (printOptions.imageFormat, "png"))
         embedPNGImage (obj, cell_index, figHandle, printOptions);
