@@ -311,15 +311,7 @@ classdef JupyterNotebook < handle
         stream_output.text = error_text;
         obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
         return;
-      endif
-
-      # Modify width and height of the image
-      # Divide the desired width or height by the resolution 
-      # to get the required number of inches and set it in paperposition 
-      set (figHandle, "paperposition",
-           [get(figHandle, "paperposition")(1:2), ... 
-            str2num(printOptions.width)/str2num(printOptions.resolution), ...
-            str2num(printOptions.height)/str2num(printOptions.resolution)]); 
+      endif 
       
       if (strcmpi (printOptions.imageFormat, "png"))
         embedPNGImage (obj, cell_index, figHandle, printOptions);
@@ -339,8 +331,10 @@ classdef JupyterNotebook < handle
 
     function embedPNGImage (obj, cell_index, figHandle, printOptions)
       print (figHandle, "temp.png", "-dpng", ["-r" printOptions.resolution]);
+      metadata = struct ("image/png", struct ("width", printOptions.width,
+                                              "height", printOptions.height));
       encodedImage = base64_encode (uint8 (fileread ("temp.png")));
-      display_output = struct ("output_type", "display_data", "metadata", struct (),
+      display_output = struct ("output_type", "display_data", "metadata", metadata,
                               "data", struct ("text/plain", 
                                               {"<IPython.core.display.Image object>"},
                                               "image/png", encodedImage));
@@ -350,7 +344,9 @@ classdef JupyterNotebook < handle
 
     function embedSVGImage (obj, cell_index, figHandle, printOptions)
       print (figHandle, "temp.svg", "-dsvg", ["-r" printOptions.resolution]);
-      display_output = struct ("output_type", "display_data", "metadata", struct (),
+      metadata = struct ("image/svg+xml", struct ("width", printOptions.width,
+                                                  "height", printOptions.height));
+      display_output = struct ("output_type", "display_data", "metadata", metadata,
                                 "data", struct ());
       # Use dot notation to avoid making a struct array
       display_output.data.("image/svg+xml") = strsplit (fileread ("temp.svg"), "\n");
@@ -361,8 +357,10 @@ classdef JupyterNotebook < handle
 
     function embedJPGImage (obj, cell_index, figHandle, printOptions)
       print (figHandle, "temp.jpg", "-djpg", ["-r" printOptions.resolution]);
+      metadata = struct ("image/jpeg", struct ("width", printOptions.width,
+                                               "height", printOptions.height));
       encodedImage = base64_encode (uint8 (fileread ("temp.jpg")));
-      display_output = struct ("output_type", "display_data", "metadata", struct (),
+      display_output = struct ("output_type", "display_data", "metadata", metadata,
                               "data", struct ("text/plain", 
                                               {"<IPython.core.display.Image object>"},
                                               "image/jpeg", encodedImage));
@@ -370,5 +368,4 @@ classdef JupyterNotebook < handle
       delete ("temp.jpg");
     endfunction
   endmethods
-
 endclassdef
