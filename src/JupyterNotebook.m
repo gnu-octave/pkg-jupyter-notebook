@@ -177,6 +177,10 @@ classdef JupyterNotebook < handle
                 i < numel (magics))
               printOptions.width = magics{i+1};
             endif
+            if ((strcmp (magics{i}, "-h") || (strcmp (magics{i}, "--height"))) &&
+                i < numel (magics))
+              printOptions.height = magics{i+1};
+            endif
           endfor
         endif
       endfor
@@ -306,6 +310,16 @@ classdef JupyterNotebook < handle
       # Check if the width is correct
       if (isempty (str2num (printOptions.width)))
         error_text = {"A number is required for width, not a string"};
+        stream_output = struct ("name", "stderr", "output_type", "stream");
+        # Use dot notation to avoid making a struct array
+        stream_output.text = error_text;
+        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        return;
+      endif 
+
+      # Check if the height is correct
+      if (isempty (str2num (printOptions.height)))
+        error_text = {"A number is required for height, not a string"};
         stream_output = struct ("name", "stderr", "output_type", "stream");
         # Use dot notation to avoid making a struct array
         stream_output.text = error_text;
