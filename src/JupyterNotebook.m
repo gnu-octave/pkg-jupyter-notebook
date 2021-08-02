@@ -290,40 +290,28 @@ classdef JupyterNotebook < handle
     function embedImage (obj, cell_index, figHandle, printOptions)
       if (isempty (get (figHandle, "children")))
         error_text = {"The figure is empty!"};
-        stream_output = struct ("name", "stderr", "output_type", "stream");
-        # Use dot notation to avoid making a struct array
-        stream_output.text = error_text;
-        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        obj.addErrorOutput (cell_index, "The figure is empty!");
         return;
       endif
 
       # Check if the resolution is correct
       if (isempty (str2num (printOptions.resolution)))
-        error_text = {"A number is required for resolution, not a string"};
-        stream_output = struct ("name", "stderr", "output_type", "stream");
-        # Use dot notation to avoid making a struct array
-        stream_output.text = error_text;
-        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        obj.addErrorOutput (cell_index, 
+                            "A number is required for resolution, not a string");
         return;
       endif
 
       # Check if the width is correct
       if (isempty (str2num (printOptions.width)))
-        error_text = {"A number is required for width, not a string"};
-        stream_output = struct ("name", "stderr", "output_type", "stream");
-        # Use dot notation to avoid making a struct array
-        stream_output.text = error_text;
-        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        obj.addErrorOutput (cell_index, 
+                            "A number is required for width, not a string");
         return;
       endif 
 
       # Check if the height is correct
       if (isempty (str2num (printOptions.height)))
-        error_text = {"A number is required for height, not a string"};
-        stream_output = struct ("name", "stderr", "output_type", "stream");
-        # Use dot notation to avoid making a struct array
-        stream_output.text = error_text;
-        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        obj.addErrorOutput (cell_index, 
+                            "A number is required for height, not a string");
         return;
       endif 
       
@@ -334,12 +322,9 @@ classdef JupyterNotebook < handle
       elseif (strcmpi (printOptions.imageFormat, "jpg"))
         embedJPGImage (obj, cell_index, figHandle, printOptions);
       else
-        error_text = {["Cannot embed the \'" ...
-                        printOptions.imageFormat "\' image format\n"]};
-        stream_output = struct ("name", "stderr", "output_type", "stream");
-        # Use dot notation to avoid making a struct array
-        stream_output.text = error_text;
-        obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
+        obj.addErrorOutput (cell_index, 
+                            ["Cannot embed the \'" ...
+                             printOptions.imageFormat "\' image format\n"]);
       endif
     endfunction
 
@@ -380,6 +365,13 @@ classdef JupyterNotebook < handle
                                               "image/jpeg", encodedImage));
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
       delete ("temp.jpg");
+    endfunction
+
+    function addErrorOutput (obj, cell_index, error_msg)
+      stream_output = struct ("name", "stderr", "output_type", "stream");
+      # Use dot notation to avoid making a struct array
+      stream_output.text = {error_msg};
+      obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
     endfunction
   endmethods
 endclassdef
