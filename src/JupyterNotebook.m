@@ -213,11 +213,36 @@ classdef JupyterNotebook < handle
       # Check for newly created figures
       fig_ids_new = setdiff (findall (0, "type", "figure"), fig_ids);
 
-      for i = 1 : numel (fig_ids_new)
-        figure (fig_ids_new (i), "visible", "off"); 
-        obj.embedImage (cell_index, fig_ids_new (i), printOptions);
-        delete (fig_ids_new(i));
-      endfor
+      if (numel (fig_ids_new) > 0)
+        if (exist ("__octave_jupyter_temp__", "dir"))
+          # Delete open figures before raising the error
+          for i = 1 : numel (fig_ids_new)
+            delete (fig_ids_new(i));
+          endfor
+          error (["JupyterNotebook: temporary directory " ...
+                  "__octave_jupyter_temp__ exists."]);
+        endif
+
+        [status, msg, msgid] = mkdir ("__octave_jupyter_temp__");
+        if (status == 0)
+          # Delete open figures before raising the error
+          for i = 1 : numel (fig_ids_new)
+            delete (fig_ids_new(i));
+          endfor
+          error (["JupyterNotebook: Cannot create a temporary directory. " msg]);
+        endif
+
+        for i = 1 : numel (fig_ids_new)
+          figure (fig_ids_new (i), "visible", "off"); 
+          obj.embedImage (cell_index, fig_ids_new (i), printOptions);
+          delete (fig_ids_new(i));
+        endfor
+
+        [status, msg, msgid] = rmdir ("__octave_jupyter_temp__");
+        if (status == 0)
+          error (["JupyterNotebook: Cannot delete the temporary directory. " msg]);
+        endif
+      endif
     endfunction
 
     function runAll (obj)
@@ -329,42 +354,45 @@ classdef JupyterNotebook < handle
     endfunction
 
     function embedPNGImage (obj, cell_index, figHandle, printOptions)
-      print (figHandle, "temp.png", "-dpng", ["-r" printOptions.resolution]);
+      image_path = "__octave_jupyter_temp__/temp.png";
+      print (figHandle, image_path, "-dpng", ["-r" printOptions.resolution]);
       metadata = struct ("image/png", struct ("width", printOptions.width,
                                               "height", printOptions.height));
-      encodedImage = base64_encode (uint8 (fileread ("temp.png")));
+      encodedImage = base64_encode (uint8 (fileread (image_path)));
       display_output = struct ("output_type", "display_data", "metadata", metadata,
                               "data", struct ("text/plain", 
                                               {"<IPython.core.display.Image object>"},
                                               "image/png", encodedImage));
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
-      delete ("temp.png");
+      delete (image_path);
     endfunction
 
     function embedSVGImage (obj, cell_index, figHandle, printOptions)
-      print (figHandle, "temp.svg", "-dsvg", ["-r" printOptions.resolution]);
+      image_path = "__octave_jupyter_temp__/temp.svg";
+      print (figHandle, image_path, "-dsvg", ["-r" printOptions.resolution]);
       metadata = struct ("image/svg+xml", struct ("width", printOptions.width,
                                                   "height", printOptions.height));
       display_output = struct ("output_type", "display_data", "metadata", metadata,
                                 "data", struct ());
       # Use dot notation to avoid making a struct array
-      display_output.data.("image/svg+xml") = strsplit (fileread ("temp.svg"), "\n");
+      display_output.data.("image/svg+xml") = strsplit (fileread (image_path), "\n");
       display_output.data.("text/plain") = {"<IPython.core.display.SVG object>"};                                        
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
-      delete ("temp.svg");
+      delete (image_path);
     endfunction
 
     function embedJPGImage (obj, cell_index, figHandle, printOptions)
-      print (figHandle, "temp.jpg", "-djpg", ["-r" printOptions.resolution]);
+      image_path = "__octave_jupyter_temp__/temp.jpg";
+      print (figHandle, image_path, "-djpg", ["-r" printOptions.resolution]);
       metadata = struct ("image/jpeg", struct ("width", printOptions.width,
                                                "height", printOptions.height));
-      encodedImage = base64_encode (uint8 (fileread ("temp.jpg")));
+      encodedImage = base64_encode (uint8 (fileread (image_path)));
       display_output = struct ("output_type", "display_data", "metadata", metadata,
                               "data", struct ("text/plain", 
                                               {"<IPython.core.display.Image object>"},
                                               "image/jpeg", encodedImage));
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
-      delete ("temp.jpg");
+      delete (image_path);
     endfunction
 
     function addErrorOutput (obj, cell_index, error_msg)
