@@ -220,7 +220,7 @@ classdef JupyterNotebook < handle
             delete (fig_ids_new(i));
           endfor
           error (["JupyterNotebook: temporary directory " ...
-                  "__octave_jupyter_temp__ exists."]);
+                  "__octave_jupyter_temp__ exists. Please remove it manually."]);
         endif
 
         [status, msg, msgid] = mkdir ("__octave_jupyter_temp__");
