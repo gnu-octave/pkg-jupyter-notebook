@@ -370,13 +370,24 @@ classdef JupyterNotebook < handle
     function embedSVGImage (obj, cell_index, figHandle, printOptions)
       image_path = "__octave_jupyter_temp__/temp.svg";
       print (figHandle, image_path, "-dsvg", ["-r" printOptions.resolution]);
-      metadata = struct ("image/svg+xml", struct ("width", printOptions.width,
-                                                  "height", printOptions.height));
-      display_output = struct ("output_type", "display_data", "metadata", metadata,
-                                "data", struct ());
+      display_output = struct ("output_type", "display_data", "metadata", struct (),
+                               "data", struct ());
       # Use dot notation to avoid making a struct array
       display_output.data.("image/svg+xml") = strsplit (fileread (image_path), "\n");
-      display_output.data.("text/plain") = {"<IPython.core.display.SVG object>"};                                        
+      display_output.data.("text/plain") = {"<IPython.core.display.SVG object>"};
+      # Detect the <svg> tag. it is either the first or the second item
+      if (strncmpi (display_output.data.("image/svg+xml"){1}, "<svg", 4))
+        i = 1;
+      else
+        i = 2;
+      endif
+      # Embed the width and height in the image itself
+      svg_tag = display_output.data.("image/svg+xml"){i};
+      svg_tag = regexprep (svg_tag, "width=\"(.*?)\"",
+                           ["width=\"" printOptions.width "px\""]);
+      svg_tag = regexprep (svg_tag, "height=\"(.*?)\"",
+                           ["height=\"" printOptions.height "px\""]);
+      display_output.data.("image/svg+xml"){i} = svg_tag;        
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
       delete (image_path);
     endfunction
