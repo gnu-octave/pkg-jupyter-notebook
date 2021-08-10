@@ -18,9 +18,101 @@
 classdef JupyterNotebook < handle
 
   ## -*- texinfo -*- 
-  ## @deftypefn  {} {@var{notebook} =} JupyterNotebook ()
+  ## @deftypefn  {} {@var{notebook} =} JupyterNotebook (@var{notebookFileName})
   ##
-  ## Run and fill Jupyter Notebooks within GNU Octave. 
+  ## Run and fill the Jupyter Notebook in @var{notebookFileName} 
+  ## within GNU Octave. 
+  ##
+  ## Support filling both textual and graphical outputs.
+  ## 
+  ## This classdef has a public attribute @qcode{notebook} which is  
+  ## the struct that we get from decoding the JSON text that represents 
+  ## the notebook. This attribute is left public on purpose in case 
+  ## the user wants to manipulate the notebook more. 
+  ##
+  ## Note: @qcode{nbformat} versions lower than 4.0 are not supported.
+  ##
+  ## @qcode{%plot} magic is supported with the following settings:
+  ## @itemize @bullet
+  ## @item
+  ## "%plot -f <format>" or "%plot --format <format>": this setting allows you
+  ## to specify the format of the images generated from plotting. the supported
+  ## formats are:
+  ## 
+  ## @itemize @minus
+  ## @item
+  ## PNG (default format)
+  ## 
+  ## @item
+  ## SVG (Note: SVG images may not appear in the notebook. To view them, 
+  ## trust the notebook).
+  ## 
+  ## @item
+  ## JPG
+  ## @end itemize
+  ## 
+  ## @item
+  ## "%plot -r <number>" or "%plot --resolution <number>": this setting allows 
+  ## you to specify the resolution of the images generated from plotting.
+  ## 
+  ## @item
+  ## "%plot -w <number>" or "%plot --width <number>": this setting allows 
+  ## you to specify the width of the images generated from plotting.
+  ##
+  ## @item
+  ## "%plot -h <number>" or "%plot --height <number>": this setting allows 
+  ## you to specify the height of the images generated from plotting.
+  ## @end itemize
+  ##
+  ## Examples:
+  ##
+  ## @example
+  ## @group
+  ## ## Run all cells and generate the filled notebook
+  ##
+  ## ## Instantiate an object from the notebook file
+  ## notebook = JupyterNotebook("myNotebook.ipynb")
+  ##     @result{} notebook =
+  ##        
+  ##         <object JupyterNotebook>
+  ##
+  ## ## Run the code and embed the results in the @qcode{notebook} attribute
+  ## notebook.runAll()
+  ## ## Generate the new notebook by overwriting the original notebook
+  ## notebook.generateNotebook("myNotebook.ipynb")
+  ## @end group
+  ##
+  ## @group
+  ## ## Run the second cell and generate the filled notebook
+  ##
+  ## ## Instantiate an object from the notebook file
+  ## notebook = JupyterNotebook("myNotebook.ipynb")
+  ##     @result{} notebook =
+  ##        
+  ##         <object JupyterNotebook>
+  ##
+  ## ## Run the code and embed the results in the @qcode{notebook} attribute
+  ## notebook.run(2)
+  ## ## Generate the new notebook in a new file
+  ## notebook.generateNotebook("myNewNotebook.ipynb")
+  ## @end group
+  ##
+  ## @group
+  ## ## Generate an Octave script from a notebook
+  ##
+  ## ## Instantiate an object from the notebook file
+  ## notebook = JupyterNotebook("myNotebook.ipynb")
+  ##     @result{} notebook =
+  ##        
+  ##         <object JupyterNotebook>
+  ##
+  ## ## Generate the octave script
+  ## notebook.generateOctaveScript("myScript.m")
+  ## @end group
+  ## @end example
+  ##
+  ## @seealso{jsondecode, jsonencode}
+  ## @end deftypefn
   
   properties
     notebook = struct()
@@ -84,6 +176,19 @@ classdef JupyterNotebook < handle
     endfunction
 
     function generateOctaveScript (obj, scriptFileName)
+      
+      ## -*- texinfo -*-
+      ## @deftypefn {} {} generateOctaveScript (@var{scriptFileName})
+      ##
+      ## Write an Octave script that has the contents of the jupyter notebook 
+      ## stored in the @qcode{notebook} attribute to @var{scriptFileName}.
+      ## 
+      ## Non code cells are generated as block comments.
+      ##
+      ## See @code{help JupyterNotebook} for examples.
+      ##
+      ## @end deftypefn
+      
       if (nargin != 2)
         print_usage ();
       endif
@@ -112,6 +217,19 @@ classdef JupyterNotebook < handle
     endfunction
 
     function generateNotebook (obj, notebookFileName)
+          
+      ## -*- texinfo -*-
+      ## @deftypefn {} {} generateNotebook (@var{notebookFileName})
+      ##
+      ## Write the jupyter notebook stored in the @qcode{notebook} 
+      ## attribute to @var{notebookFileName}.
+      ##
+      ## The @qcode{notebook} attribute is encoded to JSON text 
+      ##
+      ## See @code{help JupyterNotebook} for examples.
+      ##
+      ## @end deftypefn
+ 
       if (nargin != 2)
         print_usage ();
       endif
@@ -129,6 +247,29 @@ classdef JupyterNotebook < handle
     endfunction
 
     function run (obj, cell_index)
+          
+      ## -*- texinfo -*-
+      ## @deftypefn {} {} run (@var{cell_index})
+      ##
+      ## Run the cell with index @var{cell_index} in the notebook. The
+      ## results are embedded in the object.
+      ##
+      ## The evaluation of the code inside the notebook cells is done
+      ## in a separate context. This context is loaded before running
+      ## the code inside the cell and saved after running it.
+      ##
+      ## If the code produces figures, those figures are set hidden,  
+      ## saved in a temporary directory @qcode{__octave_jupyter_temp__} 
+      ## and removed after being embedded. The temporary directory is 
+      ## also removed after running the code. 
+      ##
+      ## Your open figures won't be affected by the figures produced by 
+      ## the code in the notebook.
+      ##
+      ## See @code{help JupyterNotebook} for examples.
+      ##
+      ## @end deftypefn
+   
       if (nargin != 2)
         print_usage ();
       endif
@@ -246,6 +387,28 @@ classdef JupyterNotebook < handle
     endfunction
 
     function runAll (obj)
+              
+      ## -*- texinfo -*-
+      ## @deftypefn {} {} runAll ()
+      ##
+      ## Run all cells in the notebook. The results are embedded in the object.
+      ##
+      ## The evaluation of the code inside the notebook cells is done
+      ## in a separate context. This context is loaded before running
+      ## the code inside the cell and saved after running it.
+      ##
+      ## If the code produces figures, those figures are set hidden,  
+      ## saved in a temporary directory @qcode{__octave_jupyter_temp__}, 
+      ## and removed after being embedded. The temporary directory is 
+      ## also removed after running the code.
+      ##
+      ## Your open figures won't be affected by the figures produced by 
+      ## the code in the notebook.
+      ##
+      ## See @code{help JupyterNotebook} for examples.
+      ##
+      ## @end deftypefn
+
       if (nargin != 1)
         print_usage ();
       endif
@@ -258,6 +421,10 @@ classdef JupyterNotebook < handle
 
   methods (Access = "private")
     function retVal = evalCode (__obj__, __code__)
+      
+      ## Evaluate the code by loading the context, running the code using
+      ## evalc, then storing the context.
+      
       if (nargin != 2)
         print_usage ();
       endif
@@ -290,6 +457,9 @@ classdef JupyterNotebook < handle
     endfunction
 
     function evalContext (obj, op)
+
+      ## Load and store the context from/in a private attribute.
+
       if (strcmp (op, "save"))
         # Handle the ans var in the context
         obj.context = struct("ans", obj.context.ans);
@@ -313,6 +483,12 @@ classdef JupyterNotebook < handle
     endfunction
 
     function embedImage (obj, cell_index, figHandle, printOptions)
+
+      ## Embed images in the notebook. To support a new format:
+      ## 1. Make a new function that embeds the new format (like embedPNGImage)
+      ## 2. Add an "elseif" statement that detects the new format and makes
+      ##    a call to the new function 
+
       if (isempty (get (figHandle, "children")))
         error_text = {"The figure is empty!"};
         obj.addErrorOutput (cell_index, "The figure is empty!");
