@@ -1,15 +1,15 @@
-## Copyright (C) 2020 The Octave Project Developers
-## 
+## Copyright (C) 2021 The Octave Project Developers
+##
 ## This program is free software: you can redistribute it and/or modify it
 ## under the terms of the GNU General Public License as published by
 ## the Free Software Foundation, either version 3 of the License, or
 ## (at your option) any later version.
-## 
+##
 ## This program is distributed in the hope that it will be useful, but
 ## WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
-## 
+##
 ## You should have received a copy of the GNU General Public License
 ## along with this program.  If not, see
 ## <https://www.gnu.org/licenses/>.
@@ -17,18 +17,18 @@
 
 classdef JupyterNotebook < handle
 
-  ## -*- texinfo -*- 
+  ## -*- texinfo -*-
   ## @deftypefn  {} {@var{notebook} =} JupyterNotebook (@var{notebookFileName})
   ##
-  ## Run and fill the Jupyter Notebook in @var{notebookFileName} 
-  ## within GNU Octave. 
+  ## Run and fill the Jupyter Notebook in @var{notebookFileName}
+  ## within GNU Octave.
   ##
   ## Support filling both textual and graphical outputs.
-  ## 
-  ## This classdef has a public attribute @qcode{notebook} which is  
-  ## the struct that we get from decoding the JSON text that represents 
-  ## the notebook. This attribute is left public on purpose in case 
-  ## the user wants to manipulate the notebook more. 
+  ##
+  ## This classdef has a public attribute @qcode{notebook} which is
+  ## the struct that we get from decoding the JSON text that represents
+  ## the notebook. This attribute is left public on purpose in case
+  ## the user wants to manipulate the notebook more.
   ##
   ## Note: @qcode{nbformat} versions lower than 4.0 are not supported.
   ##
@@ -38,29 +38,29 @@ classdef JupyterNotebook < handle
   ## "%plot -f <format>" or "%plot --format <format>": this setting allows you
   ## to specify the format of the images generated from plotting. the supported
   ## formats are:
-  ## 
+  ##
   ## @itemize @minus
   ## @item
   ## PNG (default format)
-  ## 
+  ##
   ## @item
-  ## SVG (Note: SVG images may not appear in the notebook. To view them, 
+  ## SVG (Note: SVG images may not appear in the notebook. To view them,
   ## trust the notebook).
-  ## 
+  ##
   ## @item
   ## JPG
   ## @end itemize
-  ## 
+  ##
   ## @item
-  ## "%plot -r <number>" or "%plot --resolution <number>": this setting allows 
+  ## "%plot -r <number>" or "%plot --resolution <number>": this setting allows
   ## you to specify the resolution of the images generated from plotting.
-  ## 
+  ##
   ## @item
-  ## "%plot -w <number>" or "%plot --width <number>": this setting allows 
+  ## "%plot -w <number>" or "%plot --width <number>": this setting allows
   ## you to specify the width of the images generated from plotting.
   ##
   ## @item
-  ## "%plot -h <number>" or "%plot --height <number>": this setting allows 
+  ## "%plot -h <number>" or "%plot --height <number>": this setting allows
   ## you to specify the height of the images generated from plotting.
   ## @end itemize
   ##
@@ -73,7 +73,7 @@ classdef JupyterNotebook < handle
   ## ## Instantiate an object from the notebook file
   ## notebook = JupyterNotebook("myNotebook.ipynb")
   ##     @result{} notebook =
-  ##        
+  ##
   ##         <object JupyterNotebook>
   ##
   ## ## Run the code and embed the results in the @qcode{notebook} attribute
@@ -88,7 +88,7 @@ classdef JupyterNotebook < handle
   ## ## Instantiate an object from the notebook file
   ## notebook = JupyterNotebook("myNotebook.ipynb")
   ##     @result{} notebook =
-  ##        
+  ##
   ##         <object JupyterNotebook>
   ##
   ## ## Run the code and embed the results in the @qcode{notebook} attribute
@@ -103,7 +103,7 @@ classdef JupyterNotebook < handle
   ## ## Instantiate an object from the notebook file
   ## notebook = JupyterNotebook("myNotebook.ipynb")
   ##     @result{} notebook =
-  ##        
+  ##
   ##         <object JupyterNotebook>
   ##
   ## ## Generate the octave script
@@ -113,7 +113,7 @@ classdef JupyterNotebook < handle
   ##
   ## @seealso{jsondecode, jsonencode}
   ## @end deftypefn
-  
+
   properties
     notebook = struct()
   endproperties
@@ -134,10 +134,10 @@ classdef JupyterNotebook < handle
 
       obj.notebook = jsondecode (fileread (notebookFileName));
 
-      # Validate the notebook's format according to nbformat: 4.0 
-      if (! (isfield (obj.notebook, "metadata") && 
+      # Validate the notebook's format according to nbformat: 4.0
+      if (! (isfield (obj.notebook, "metadata") &&
              isfield (obj.notebook, "nbformat") &&
-             isfield (obj.notebook, "nbformat_minor") && 
+             isfield (obj.notebook, "nbformat_minor") &&
              isfield (obj.notebook, "cells")))
         error ("JupyterNotebook: not valid format for Jupyter notebooks");
       endif
@@ -148,7 +148,7 @@ classdef JupyterNotebook < handle
       endif
 
       # Handle the case if there is only one cell.
-      # Make "obj.notebook.cells" a cell of structs to match the format 
+      # Make "obj.notebook.cells" a cell of structs to match the format
       if (numel (obj.notebook.cells) == 1)
         obj.notebook.cells = {obj.notebook.cells};
       endif
@@ -167,28 +167,28 @@ classdef JupyterNotebook < handle
         if ( ! isfield (obj.notebook.cells{i}, "cell_type"))
           error ("JupyterNotebook: cells must contain a \"cell_type\" field");
         endif
-        # Handle when null json values are decoded into empty arrays 
+        # Handle when null json values are decoded into empty arrays
         if (isfield (obj.notebook.cells{i}, "execution_count") &&
             numel (obj.notebook.cells{i}.execution_count) == 0)
-          obj.notebook.cells{i}.execution_count = 1;    
+          obj.notebook.cells{i}.execution_count = 1;
         endif
       endfor
     endfunction
 
     function generateOctaveScript (obj, scriptFileName)
-      
+
       ## -*- texinfo -*-
       ## @deftypefn {} {} generateOctaveScript (@var{scriptFileName})
       ##
-      ## Write an Octave script that has the contents of the jupyter notebook 
+      ## Write an Octave script that has the contents of the jupyter notebook
       ## stored in the @qcode{notebook} attribute to @var{scriptFileName}.
-      ## 
+      ##
       ## Non code cells are generated as block comments.
       ##
       ## See @code{help JupyterNotebook} for examples.
       ##
       ## @end deftypefn
-      
+
       if (nargin != 2)
         print_usage ();
       endif
@@ -217,19 +217,19 @@ classdef JupyterNotebook < handle
     endfunction
 
     function generateNotebook (obj, notebookFileName)
-          
+
       ## -*- texinfo -*-
       ## @deftypefn {} {} generateNotebook (@var{notebookFileName})
       ##
-      ## Write the jupyter notebook stored in the @qcode{notebook} 
+      ## Write the jupyter notebook stored in the @qcode{notebook}
       ## attribute to @var{notebookFileName}.
       ##
-      ## The @qcode{notebook} attribute is encoded to JSON text 
+      ## The @qcode{notebook} attribute is encoded to JSON text
       ##
       ## See @code{help JupyterNotebook} for examples.
       ##
       ## @end deftypefn
- 
+
       if (nargin != 2)
         print_usage ();
       endif
@@ -247,7 +247,7 @@ classdef JupyterNotebook < handle
     endfunction
 
     function run (obj, cell_index)
-          
+
       ## -*- texinfo -*-
       ## @deftypefn {} {} run (@var{cell_index})
       ##
@@ -258,18 +258,18 @@ classdef JupyterNotebook < handle
       ## in a separate context. This context is loaded before running
       ## the code inside the cell and saved after running it.
       ##
-      ## If the code produces figures, those figures are set hidden,  
-      ## saved in a temporary directory @qcode{__octave_jupyter_temp__} 
-      ## and removed after being embedded. The temporary directory is 
-      ## also removed after running the code. 
+      ## If the code produces figures, those figures are set hidden,
+      ## saved in a temporary directory @qcode{__octave_jupyter_temp__}
+      ## and removed after being embedded. The temporary directory is
+      ## also removed after running the code.
       ##
-      ## Your open figures won't be affected by the figures produced by 
+      ## Your open figures won't be affected by the figures produced by
       ## the code in the notebook.
       ##
       ## See @code{help JupyterNotebook} for examples.
       ##
       ## @end deftypefn
-   
+
       if (nargin != 2)
         print_usage ();
       endif
@@ -309,7 +309,7 @@ classdef JupyterNotebook < handle
             if ((strcmp (magics{i}, "-f") || (strcmp (magics{i}, "--format"))) &&
                 i < numel (magics))
               printOptions.imageFormat = magics{i+1};
-            endif 
+            endif
             if ((strcmp (magics{i}, "-r") || (strcmp (magics{i}, "--resolution"))) &&
                 i < numel (magics))
               printOptions.resolution = magics{i+1};
@@ -374,7 +374,7 @@ classdef JupyterNotebook < handle
         endif
 
         for i = 1 : numel (fig_ids_new)
-          figure (fig_ids_new (i), "visible", "off"); 
+          figure (fig_ids_new (i), "visible", "off");
           obj.embedImage (cell_index, fig_ids_new (i), printOptions);
           delete (fig_ids_new(i));
         endfor
@@ -387,7 +387,7 @@ classdef JupyterNotebook < handle
     endfunction
 
     function runAll (obj)
-              
+
       ## -*- texinfo -*-
       ## @deftypefn {} {} runAll ()
       ##
@@ -397,12 +397,12 @@ classdef JupyterNotebook < handle
       ## in a separate context. This context is loaded before running
       ## the code inside the cell and saved after running it.
       ##
-      ## If the code produces figures, those figures are set hidden,  
-      ## saved in a temporary directory @qcode{__octave_jupyter_temp__}, 
-      ## and removed after being embedded. The temporary directory is 
+      ## If the code produces figures, those figures are set hidden,
+      ## saved in a temporary directory @qcode{__octave_jupyter_temp__},
+      ## and removed after being embedded. The temporary directory is
       ## also removed after running the code.
       ##
-      ## Your open figures won't be affected by the figures produced by 
+      ## Your open figures won't be affected by the figures produced by
       ## the code in the notebook.
       ##
       ## See @code{help JupyterNotebook} for examples.
@@ -412,7 +412,7 @@ classdef JupyterNotebook < handle
       if (nargin != 1)
         print_usage ();
       endif
-      
+
       for i = 1 : numel (obj.notebook.cells)
         obj.run(i);
       endfor
@@ -421,10 +421,10 @@ classdef JupyterNotebook < handle
 
   methods (Access = "private")
     function retVal = evalCode (__obj__, __code__)
-      
+
       ## Evaluate the code by loading the context, running the code using
       ## evalc, then storing the context.
-      
+
       if (nargin != 2)
         print_usage ();
       endif
@@ -463,7 +463,7 @@ classdef JupyterNotebook < handle
       if (strcmp (op, "save"))
         # Handle the ans var in the context
         obj.context = struct("ans", obj.context.ans);
-        
+
         forbidden_var_names = {"__code__", "__obj__", "ans"};
 
         ## Get variable names
@@ -487,7 +487,7 @@ classdef JupyterNotebook < handle
       ## Embed images in the notebook. To support a new format:
       ## 1. Make a new function that embeds the new format (like embedPNGImage)
       ## 2. Add an "elseif" statement that detects the new format and makes
-      ##    a call to the new function 
+      ##    a call to the new function
 
       if (isempty (get (figHandle, "children")))
         error_text = {"The figure is empty!"};
@@ -497,25 +497,25 @@ classdef JupyterNotebook < handle
 
       # Check if the resolution is correct
       if (isempty (str2num (printOptions.resolution)))
-        obj.addErrorOutput (cell_index, 
+        obj.addErrorOutput (cell_index,
                             "A number is required for resolution, not a string");
         return;
       endif
 
       # Check if the width is correct
       if (isempty (str2num (printOptions.width)))
-        obj.addErrorOutput (cell_index, 
+        obj.addErrorOutput (cell_index,
                             "A number is required for width, not a string");
         return;
-      endif 
+      endif
 
       # Check if the height is correct
       if (isempty (str2num (printOptions.height)))
-        obj.addErrorOutput (cell_index, 
+        obj.addErrorOutput (cell_index,
                             "A number is required for height, not a string");
         return;
-      endif 
-      
+      endif
+
       if (strcmpi (printOptions.imageFormat, "png"))
         embedPNGImage (obj, cell_index, figHandle, printOptions);
       elseif (strcmpi (printOptions.imageFormat, "svg"))
@@ -523,7 +523,7 @@ classdef JupyterNotebook < handle
       elseif (strcmpi (printOptions.imageFormat, "jpg"))
         embedJPGImage (obj, cell_index, figHandle, printOptions);
       else
-        obj.addErrorOutput (cell_index, 
+        obj.addErrorOutput (cell_index,
                             ["Cannot embed the \'" ...
                              printOptions.imageFormat "\' image format\n"]);
       endif
@@ -536,7 +536,7 @@ classdef JupyterNotebook < handle
                                               "height", printOptions.height));
       encodedImage = base64_encode (uint8 (fileread (image_path)));
       display_output = struct ("output_type", "display_data", "metadata", metadata,
-                              "data", struct ("text/plain", 
+                              "data", struct ("text/plain",
                                               {"<IPython.core.display.Image object>"},
                                               "image/png", encodedImage));
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
@@ -563,7 +563,7 @@ classdef JupyterNotebook < handle
                            ["width=\"" printOptions.width "px\""]);
       svg_tag = regexprep (svg_tag, "height=\"(.*?)\"",
                            ["height=\"" printOptions.height "px\""]);
-      display_output.data.("image/svg+xml"){i} = svg_tag;        
+      display_output.data.("image/svg+xml"){i} = svg_tag;
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
       delete (image_path);
     endfunction
@@ -575,7 +575,7 @@ classdef JupyterNotebook < handle
                                                "height", printOptions.height));
       encodedImage = base64_encode (uint8 (fileread (image_path)));
       display_output = struct ("output_type", "display_data", "metadata", metadata,
-                              "data", struct ("text/plain", 
+                              "data", struct ("text/plain",
                                               {"<IPython.core.display.Image object>"},
                                               "image/jpeg", encodedImage));
       obj.notebook.cells{cell_index}.outputs{end + 1} = display_output;
