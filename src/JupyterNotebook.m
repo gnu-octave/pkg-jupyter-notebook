@@ -590,7 +590,7 @@ classdef JupyterNotebook < handle
       dstruct.output_type = "display_data";
       dstruct.metadata.(mime).width  = printOptions.width;
       dstruct.metadata.(mime).height = printOptions.height;
-      dstruct.data.("text/plain") = {"<IPython.core.display.Image object>"},
+      dstruct.data.("text/plain") = {"<IPython.core.display.Image object>"};
       dstruct.data.(mime) = base64_encode (uint8 (fileread (image_path)));
 
       delete (image_path);
@@ -598,7 +598,7 @@ classdef JupyterNotebook < handle
     endfunction
 
 
-    function dstruct = embedSVGImage (obj, figHandle, printOptions)
+    function dstruct = embed_svg_image (obj, figHandle, printOptions)
 
       image_path = fullfile ("__octave_jupyter_temp__", "temp.svg");
       print (figHandle, image_path, "-dsvg", ["-r" printOptions.resolution]);
