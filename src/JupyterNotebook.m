@@ -563,7 +563,7 @@ classdef JupyterNotebook < handle
                                                     printOptions, "jpg");
         case "svg"
           display_output = obj.embed_svg_image (figHandle, printOptions);
-        default
+        otherwise
           obj.addErrorOutput (cell_index, ...
                               ["Cannot embed the \'" ...
                                printOptions.imageFormat "\' image format\n"]);
