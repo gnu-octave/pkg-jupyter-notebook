@@ -642,3 +642,124 @@ classdef JupyterNotebook < handle
   endmethods
 
 endclassdef
+
+## Test running a single cell
+%!test
+%! n = JupyterNotebook ("../examples/octave_kernel.ipynb");
+%! 
+%! ## Test embedding images
+%! n.run (2);
+%! assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
+%! assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/png"));
+%! assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
+%!         {"<IPython.core.display.Image object>"});
+%! 
+%! ## Test running non-code cells
+%! markdown_cell = n.notebook.cells{1};
+%! n.run (1);
+%! assert (markdown_cell, n.notebook.cells{1});
+
+## Test running all cells
+%!test
+%! n = JupyterNotebook ("../examples/octave_kernel.ipynb");
+%! n.runAll ();
+%!
+%! ## Test embedding images
+%! assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
+%! assert (isfield (n.notebook.cells{3}.outputs{1}.data, "image/png"));
+%! assert (getfield (n.notebook.cells{3}.outputs{1}.data, "text/plain"),
+%!         {"<IPython.core.display.Image object>"});
+%! 
+%! ## Test running non-code cells
+%! markdown_cell = n.notebook.cells{1};
+%! assert (markdown_cell, n.notebook.cells{1});
+%! 
+%! ## Test embedding textual output
+%! assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
+%! assert (n.notebook.cells{6}.outputs{1}.name, "stdout");
+%! assert (n.notebook.cells{6}.outputs{1}.text, {"4   5   6"});
+
+## Test loading and storing the context
+%!test
+%! n = JupyterNotebook ("../examples/octave_kernel.ipynb");
+%! 
+%! ## Run a cell that uses variables from the previous cell
+%! n.run (5);
+%! assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
+%! assert (n.notebook.cells{5}.outputs{1}.name, "stdout");
+%! assert (n.notebook.cells{5}.outputs{1}.text, 
+%!         {"ans = \nerror: 'a' undefined near line 1 column 2"});
+%! 
+%! ## Run the previous cell to store the used variables in the context
+%! n.run (4);
+%! 
+%! ## Re-run the cell
+%! n.run (5);
+%! assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
+%! assert (n.notebook.cells{5}.outputs{1}.name, "stdout");
+%! assert (n.notebook.cells{5}.outputs{1}.text, 
+%!         {"ans =  8\na =\n\n   1   2   3"});
+
+## Test plot magic
+%!test
+%! n = JupyterNotebook ("../examples/plot_magic_and_errors.ipynb");
+%! 
+%! ## PNG format
+%! n.run (1);
+%! assert (n.notebook.cells{1}.outputs{1}.output_type, "display_data")
+%! assert (isfield (n.notebook.cells{1}.outputs{1}.data, "image/png"));
+%! assert (getfield (n.notebook.cells{1}.outputs{1}.data, "text/plain"),
+%!         {"<IPython.core.display.Image object>"});
+%!
+%! ## SVG format
+%! n.run (2);
+%! assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
+%! assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/svg+xml"));
+%! assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
+%!         {"<IPython.core.display.SVG object>"});
+%!
+%! ## JPG format
+%! n.run (3);
+%! assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
+%! assert (isfield (n.notebook.cells{3}.outputs{1}.data, "image/jpeg"));
+%! assert (getfield (n.notebook.cells{3}.outputs{1}.data, "text/plain"),
+%!         {"<IPython.core.display.Image object>"});
+
+## Test errors
+%!test
+%! n = JupyterNotebook ("../examples/plot_magic_and_errors.ipynb");
+%! 
+%! ## Wrong resolution
+%! n.run (4);
+%! assert (n.notebook.cells{4}.outputs{1}.output_type, "stream")
+%! assert (n.notebook.cells{4}.outputs{1}.name, "stderr");
+%! assert (n.notebook.cells{4}.outputs{1}.text, 
+%!         {"A number is required for resolution, not a string"});
+%!
+%! ## Wrong width
+%! n.run (5);
+%! assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
+%! assert (n.notebook.cells{5}.outputs{1}.name, "stderr");
+%! assert (n.notebook.cells{5}.outputs{1}.text, 
+%!         {"A number is required for width, not a string"});
+%!
+%! ## Wrong height
+%! n.run (6);
+%! assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
+%! assert (n.notebook.cells{6}.outputs{1}.name, "stderr");
+%! assert (n.notebook.cells{6}.outputs{1}.text, 
+%!         {"A number is required for height, not a string"});
+%!
+%! ## Empty figure
+%! n.run (7);
+%! assert (n.notebook.cells{7}.outputs{1}.output_type, "stream")
+%! assert (n.notebook.cells{7}.outputs{1}.name, "stderr");
+%! assert (n.notebook.cells{7}.outputs{1}.text, 
+%!         {"The figure is empty!"});
+%!
+%! ## Wrong format
+%! n.run (8);
+%! assert (n.notebook.cells{8}.outputs{1}.output_type, "stream")
+%! assert (n.notebook.cells{8}.outputs{1}.name, "stderr");
+%! assert (n.notebook.cells{8}.outputs{1}.text, 
+%!         {"Cannot embed the 'pdf' image format\n"});
