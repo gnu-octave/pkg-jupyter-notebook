@@ -171,13 +171,22 @@ classdef JupyterNotebook < handle
         if (! isfield (obj.notebook.cells{i}, "source"))
           error ("JupyterNotebook: cells must contain a \"source\" field");
         endif
+        
         if (! isfield (obj.notebook.cells{i}, "cell_type"))
           error ("JupyterNotebook: cells must contain a \"cell_type\" field");
         endif
+        
         # Handle when null JSON values are decoded into empty arrays.
         if (isfield (obj.notebook.cells{i}, "execution_count")
             && numel (obj.notebook.cells{i}.execution_count) == 0)
           obj.notebook.cells{i}.execution_count = 1;
+        endif
+        
+        # Handle the case if there is only one output in the cell.
+        # Make the outputs of the cell a cell of structs to match the format.
+        if (isfield (obj.notebook.cells{i}, "outputs")
+            && numel (obj.notebook.cells{i}.outputs) == 1)
+          obj.notebook.cells{i}.outputs = {obj.notebook.cells{i}.outputs};
         endif
       endfor
 
