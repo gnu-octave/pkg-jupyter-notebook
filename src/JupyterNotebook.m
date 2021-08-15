@@ -140,7 +140,7 @@ classdef JupyterNotebook < handle
 
       obj.notebook = jsondecode (fileread (notebookFileName));
 
-      # Validate the notebook's format according to nbformat: 4.0
+      ## Validate the notebook's format according to nbformat: 4.0
       if (! (isfield (obj.notebook, "metadata") &&
              isfield (obj.notebook, "nbformat") &&
              isfield (obj.notebook, "nbformat_minor") &&
@@ -148,21 +148,21 @@ classdef JupyterNotebook < handle
         error ("JupyterNotebook: not valid format for Jupyter notebooks");
       endif
 
-      # Issue a warning if the format is lower than 4.0
+      ## Issue a warning if the format is lower than 4.0
       if (obj.notebook.nbformat < 4)
         warning (["JupyterNotebook: nbformat versions lower than 4.0 are ", ...
                   "not supported"]);
       endif
 
-      # Handle the case if there is only one cell.
-      # Make "obj.notebook.cells" a cell of structs to match the format.
+      ## Handle the case if there is only one cell.
+      ## Make "obj.notebook.cells" a cell of structs to match the format.
       if (numel (obj.notebook.cells) == 1)
         obj.notebook.cells = {obj.notebook.cells};
       endif
 
-      # Handle the case if the cells have the same keys.
-      # Make "obj.notebook.cells" a cell of structs instead of struct array
-      # to unify the indexing method.
+      ## Handle the case if the cells have the same keys.
+      ## Make "obj.notebook.cells" a cell of structs instead of struct array
+      ## to unify the indexing method.
       if (isstruct (obj.notebook.cells))
         obj.notebook.cells = num2cell (obj.notebook.cells);
       endif
@@ -176,14 +176,14 @@ classdef JupyterNotebook < handle
           error ("JupyterNotebook: cells must contain a \"cell_type\" field");
         endif
         
-        # Handle when null JSON values are decoded into empty arrays.
+        ## Handle when null JSON values are decoded into empty arrays.
         if (isfield (obj.notebook.cells{i}, "execution_count")
             && numel (obj.notebook.cells{i}.execution_count) == 0)
           obj.notebook.cells{i}.execution_count = 1;
         endif
         
-        # Handle the case if there is only one output in the cell.
-        # Make the outputs of the cell a cell of structs to match the format.
+        ## Handle the case if there is only one output in the cell.
+        ## Make the outputs of the cell a cell of structs to match the format.
         if (isfield (obj.notebook.cells{i}, "outputs")
             && numel (obj.notebook.cells{i}.outputs) == 1)
           obj.notebook.cells{i}.outputs = {obj.notebook.cells{i}.outputs};
@@ -373,7 +373,7 @@ classdef JupyterNotebook < handle
         obj.notebook.cells{cell_index}.outputs{end + 1} = stream_output;
       endif
 
-      #" If there are existing plots and newFig is empty, delete it.
+      ## If there are existing plots and newFig is empty, delete it.
       if (exist ("newFig") && isempty (get (newFig, "children")))
         delete (newFig);
       endif
@@ -542,21 +542,21 @@ classdef JupyterNotebook < handle
         return;
       endif
 
-      # Check if the resolution is correct
+      ## Check if the resolution is correct
       if (isempty (str2num (printOptions.resolution)))
         obj.addErrorOutput (cell_index, ...
                             "A number is required for resolution, not a string");
         return;
       endif
 
-      # Check if the width is correct
+      ## Check if the width is correct
       if (isempty (str2num (printOptions.width)))
         obj.addErrorOutput (cell_index, ...
                             "A number is required for width, not a string");
         return;
       endif
 
-      # Check if the height is correct
+      ## Check if the height is correct
       if (isempty (str2num (printOptions.height)))
         obj.addErrorOutput (cell_index, ...
                             "A number is required for height, not a string");
