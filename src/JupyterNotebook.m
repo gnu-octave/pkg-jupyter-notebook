@@ -138,7 +138,8 @@ classdef JupyterNotebook < handle
         error ("JupyterNotebook: notebookFileName must be a string");
       endif
 
-      obj.notebook = jsondecode (fileread (notebookFileName));
+      obj.notebook = jsondecode (fileread (notebookFileName),
+                                 "makeValidName", false);
 
       ## Validate the notebook's format according to nbformat: 4.0
       if (! (isfield (obj.notebook, "metadata") &&
