@@ -478,17 +478,38 @@ classdef JupyterNotebook < handle
 
       __obj__.loadContext ();
 
+      ## Add a statement to detect the value of the variable "ans" 
+      __code__ = [__code__ "\nans"];
+
       retVal = strtrim (evalc (__code__, ["printf (\"error: \"); ", ...
                                           "printf (lasterror.message)"]));
 
       ## Handle the "ans" variable in the context.
       start_index = rindex (retVal, "ans =") + 6;
-      if ((start_index != 6) && (start_index <= length (retVal)))
-        end_index = start_index;
-        while ((retVal(end_index) != "\n") && (end_index < length (retVal)))
-          end_index += 1;
-        endwhile
-        __obj__.context.ans = retVal(start_index:end_index);
+      if ((start_index > 6))
+        if ((start_index <= length (retVal)))
+          end_index = start_index;
+          while ((retVal(end_index) != "\n") && (end_index < length (retVal)))
+            end_index += 1;
+          endwhile
+          __obj__.context.ans = retVal(start_index:end_index);
+        else
+          end_index = length (retVal);
+          __obj__.context.ans = "";
+        endif
+
+        ## Delete the output of the additional statement if
+        ## the execution is completed with no errors.
+        if (end_index == length (retVal))
+          ## Remove the extra new line if there are other outputs with
+          ## the "ans" statement output
+          if (start_index == 7)
+            start_index = 1;
+          else
+            start_index = start_index - 7;
+          endif
+          retVal(start_index:end_index) = "";
+        endif
       endif
 
       __obj__.saveContext ();
@@ -708,7 +729,7 @@ endclassdef
 %! assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
 %! assert (n.notebook.cells{5}.outputs{1}.name, "stdout");
 %! assert (n.notebook.cells{5}.outputs{1}.text, 
-%!         {"ans =  8\na =\n\n   1   2   3"});
+%!         {"ans =  8\na =\n\n   1   2   3\n"});
 
 ## Test plot magic
 %!test
