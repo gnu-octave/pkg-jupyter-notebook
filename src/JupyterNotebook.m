@@ -703,33 +703,12 @@ endclassdef
 %! 
 %! ## Test running non-code cells
 %! markdown_cell = n.notebook.cells{1};
+%! n.run (1);
 %! assert (markdown_cell, n.notebook.cells{1});
 %! 
 %! ## Test embedding textual output
 %! assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
 %! assert (n.notebook.cells{6}.outputs{1}.name, "stdout");
-%! assert (n.notebook.cells{6}.outputs{1}.text, {"4   5   6"});
-
-## Test loading and storing the context
-%!test
-%! n = JupyterNotebook ("../examples/octave_kernel.ipynb");
-%! 
-%! ## Run a cell that uses variables from the previous cell
-%! n.run (5);
-%! assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
-%! assert (n.notebook.cells{5}.outputs{1}.name, "stdout");
-%! assert (n.notebook.cells{5}.outputs{1}.text, 
-%!         {"ans = \nerror: 'a' undefined near line 1 column 2"});
-%! 
-%! ## Run the previous cell to store the used variables in the context
-%! n.run (4);
-%! 
-%! ## Re-run the cell
-%! n.run (5);
-%! assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
-%! assert (n.notebook.cells{5}.outputs{1}.name, "stdout");
-%! assert (n.notebook.cells{5}.outputs{1}.text, 
-%!         {"ans =  8\na =\n\n   1   2   3\n"});
 
 ## Test plot magic
 %!test
