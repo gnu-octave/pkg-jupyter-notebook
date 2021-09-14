@@ -1,11 +1,11 @@
-# Octave Jupyter Notebook package 
+# Octave Jupyter Notebook package
 
 <img src="doc/icon.png" alt="logo" width="80%" style="margin-left:auto; margin-right:auto; display:block;"/>
 
 A package to run and fill Jupyter Notebooks within GNU Octave.
 
 The package supports filling both textual and graphical outputs.
- 
+
 ## Installation
 From the Octave command-line:
 ```
@@ -16,7 +16,7 @@ pkg install "https://github.com/gnu-octave/pkg-jupyter-notebook/archive/v1.0.0.t
 ```
 notebook_object = JupyterNotebook (notebookFileName)
 ```
- 
+
 This `classdef` has a public attribute `notebook` which is the `struct` that we get from decoding the JSON text that represents the notebook. This attribute is left public on purpose in case the user wants to manipulate the notebook more.
 
 **Note:** `nbformat` versions lower than 4.0 are not supported.
@@ -44,14 +44,14 @@ If the code produces figures, those figures are set hidden, saved in a temporary
 
 ### `runAll ()`
 Run all cells in the notebook. The results are embedded in the object. The evaluation of the code inside the notebook cells is done in a separate context. This context is loaded before running the code inside the cell and saved after running it.
-      
+
 If the code produces figures, those figures are set hidden,saved in a temporary directory `__octave_jupyter_temp__`, and removed after being embedded. The temporary directory is also removed after running the code.
 
 Your open figures won't be affected by the figures produced by the code in the notebook.
 
 ### `generateNotebook (notebookFileName)`
 Write the jupyter notebook stored in the `notebook` attribute to `notebookFileName`.
-      
+
 The `notebook` attribute is encoded to JSON text.
 
 ### `generateOctaveScript (scriptFileName)`

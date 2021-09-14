@@ -1,13 +1,13 @@
-name: jupyter-notebook 
+name: jupyter-notebook
 version: 1.0.0
 date: 2021-08-18
 author: Abdallah Elshamy <abdallah.k.elshamy@gmail.com>
-maintainer: Kai T. Ohlhus <k.ohlhus@gmail.com>, 
+maintainer: Kai T. Ohlhus <k.ohlhus@gmail.com>,
  Abdallah Elshamy <abdallah.k.elshamy@gmail.com>
-title: A package to run and fill Jupyter Notebooks within GNU Octave. 
-description: A package to run and fill Jupyter Notebooks within GNU Octave. 
+title: A package to run and fill Jupyter Notebooks within GNU Octave.
+description: A package to run and fill Jupyter Notebooks within GNU Octave.
  This would enable Jupyter Notebook users to evaluate
- long-running Octave Notebooks on a computing server without 
+ long-running Octave Notebooks on a computing server without
  a permanent browser connection, which is still a pending issue.
 categories: package
 depends: json (>= 1.5.0)

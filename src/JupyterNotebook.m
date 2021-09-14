@@ -172,17 +172,17 @@ classdef JupyterNotebook < handle
         if (! isfield (obj.notebook.cells{i}, "source"))
           error ("JupyterNotebook: cells must contain a \"source\" field");
         endif
-        
+
         if (! isfield (obj.notebook.cells{i}, "cell_type"))
           error ("JupyterNotebook: cells must contain a \"cell_type\" field");
         endif
-        
+
         ## Handle when null JSON values are decoded into empty arrays.
         if (isfield (obj.notebook.cells{i}, "execution_count")
             && numel (obj.notebook.cells{i}.execution_count) == 0)
           obj.notebook.cells{i}.execution_count = 1;
         endif
-        
+
         ## Handle the case if there is only one output in the cell.
         ## Make the outputs of the cell a cell of structs to match the format.
         if (isfield (obj.notebook.cells{i}, "outputs")
@@ -478,7 +478,7 @@ classdef JupyterNotebook < handle
 
       __obj__.loadContext ();
 
-      ## Add a statement to detect the value of the variable "ans" 
+      ## Add a statement to detect the value of the variable "ans"
       __code__ = [__code__ "\nans"];
 
       retVal = strtrim (evalc (__code__, ["printf (\"error: \"); ", ...
@@ -677,14 +677,14 @@ endclassdef
 ## Test running a single cell
 %!test
 %! n = JupyterNotebook ("../examples/octave_kernel.ipynb");
-%! 
+%!
 %! ## Test embedding images
 %! n.run (2);
 %! assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
 %! assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/png"));
 %! assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
 %!         {"<IPython.core.display.Image object>"});
-%! 
+%!
 %! ## Test running non-code cells
 %! markdown_cell = n.notebook.cells{1};
 %! n.run (1);
@@ -700,12 +700,12 @@ endclassdef
 %! assert (isfield (n.notebook.cells{3}.outputs{1}.data, "image/png"));
 %! assert (getfield (n.notebook.cells{3}.outputs{1}.data, "text/plain"),
 %!         {"<IPython.core.display.Image object>"});
-%! 
+%!
 %! ## Test running non-code cells
 %! markdown_cell = n.notebook.cells{1};
 %! n.run (1);
 %! assert (markdown_cell, n.notebook.cells{1});
-%! 
+%!
 %! ## Test embedding textual output
 %! assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
 %! assert (n.notebook.cells{6}.outputs{1}.name, "stdout");
@@ -713,7 +713,7 @@ endclassdef
 ## Test plot magic
 %!test
 %! n = JupyterNotebook ("../examples/plot_magic_and_errors.ipynb");
-%! 
+%!
 %! ## PNG format
 %! n.run (1);
 %! assert (n.notebook.cells{1}.outputs{1}.output_type, "display_data")
@@ -738,38 +738,38 @@ endclassdef
 ## Test errors
 %!test
 %! n = JupyterNotebook ("../examples/plot_magic_and_errors.ipynb");
-%! 
+%!
 %! ## Wrong resolution
 %! n.run (4);
 %! assert (n.notebook.cells{4}.outputs{1}.output_type, "stream")
 %! assert (n.notebook.cells{4}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{4}.outputs{1}.text, 
+%! assert (n.notebook.cells{4}.outputs{1}.text,
 %!         {"A number is required for resolution, not a string"});
 %!
 %! ## Wrong width
 %! n.run (5);
 %! assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
 %! assert (n.notebook.cells{5}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{5}.outputs{1}.text, 
+%! assert (n.notebook.cells{5}.outputs{1}.text,
 %!         {"A number is required for width, not a string"});
 %!
 %! ## Wrong height
 %! n.run (6);
 %! assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
 %! assert (n.notebook.cells{6}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{6}.outputs{1}.text, 
+%! assert (n.notebook.cells{6}.outputs{1}.text,
 %!         {"A number is required for height, not a string"});
 %!
 %! ## Empty figure
 %! n.run (7);
 %! assert (n.notebook.cells{7}.outputs{1}.output_type, "stream")
 %! assert (n.notebook.cells{7}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{7}.outputs{1}.text, 
+%! assert (n.notebook.cells{7}.outputs{1}.text,
 %!         {"The figure is empty!"});
 %!
 %! ## Wrong format
 %! n.run (8);
 %! assert (n.notebook.cells{8}.outputs{1}.output_type, "stream")
 %! assert (n.notebook.cells{8}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{8}.outputs{1}.text, 
+%! assert (n.notebook.cells{8}.outputs{1}.text,
 %!         {"Cannot embed the 'pdf' image format\n"});
