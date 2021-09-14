@@ -20,48 +20,48 @@ classdef JupyterNotebook < handle
   ## -*- texinfo -*-
   ## @deftypefn  {} {@var{notebook} =} JupyterNotebook (@var{notebookFileName})
   ##
-  ## Run and fill the Jupyter Notebook in @var{notebookFileName}
-  ## within GNU Octave.
+  ## Run and fill the Jupyter Notebook in @var{notebookFileName} within
+  ## GNU Octave.
   ##
-  ## Support filling both textual and graphical outputs.
+  ## Supported are textual and graphical Octave outputs.
   ##
-  ## This classdef has a public attribute @qcode{notebook} which is
-  ## the struct that we get from decoding the JSON text that represents
-  ## the notebook. This attribute is left public on purpose in case
-  ## the user wants to manipulate the notebook more.
+  ## This class has a public attribute @qcode{notebook} which is a struct
+  ## representing the JSON-decoded Jupyter Notebook.  This attribute is
+  ## intentionally public to enable advanced notebook manipulations.
   ##
-  ## Note: @qcode{nbformat} versions lower than 4.0 are not supported.
+  ## Note: Jupyter Notebook versions (@qcode{nbformat}) lower than 4.0 are
+  ## not supported.
   ##
   ## @qcode{%plot} magic is supported with the following settings:
   ## @itemize @bullet
   ## @item
-  ## "%plot -f <format>" or "%plot --format <format>": this setting allows you
-  ## to specify the format of the images generated from plotting. the supported
-  ## formats are:
+  ## "%plot -f <format>" or "%plot --format <format>": specifies the
+  ## image storage format.  Supported formats are:
   ##
   ## @itemize @minus
   ## @item
-  ## PNG (default format)
+  ## PNG (default)
   ##
   ## @item
-  ## SVG (Note: SVG images may not appear in the notebook. To view them,
-  ## trust the notebook).
+  ## SVG (Note: If SVG images do not appear in the notebook, it is most
+  ## related to the Jupyter Notebook security mechanism and explicitly
+  ## "trusting" them is necessary).
   ##
   ## @item
   ## JPG
   ## @end itemize
   ##
   ## @item
-  ## "%plot -r <number>" or "%plot --resolution <number>": this setting allows
-  ## you to specify the resolution of the images generated from plotting.
+  ## "%plot -r <number>" or "%plot --resolution <number>": specifies the
+  ## image resolution.
   ##
   ## @item
-  ## "%plot -w <number>" or "%plot --width <number>": this setting allows
-  ## you to specify the width of the images generated from plotting.
+  ## "%plot -w <number>" or "%plot --width <number>": specifies the
+  ## image width.
   ##
   ## @item
-  ## "%plot -h <number>" or "%plot --height <number>": this setting allows
-  ## you to specify the height of the images generated from plotting.
+  ## "%plot -h <number>" or "%plot --height <number>": specifies the
+  ## image height.
   ## @end itemize
   ##
   ## Examples:
@@ -142,10 +142,10 @@ classdef JupyterNotebook < handle
                                  "makeValidName", false);
 
       ## Validate the notebook's format according to nbformat: 4.0
-      if (! (isfield (obj.notebook, "metadata") &&
-             isfield (obj.notebook, "nbformat") &&
-             isfield (obj.notebook, "nbformat_minor") &&
-             isfield (obj.notebook, "cells")))
+      if (! (isfield (obj.notebook, "metadata")
+             && isfield (obj.notebook, "nbformat")
+             && isfield (obj.notebook, "nbformat_minor")
+             && isfield (obj.notebook, "cells")))
         error ("JupyterNotebook: not valid format for Jupyter notebooks");
       endif
 
@@ -199,7 +199,7 @@ classdef JupyterNotebook < handle
       ## -*- texinfo -*-
       ## @deftypefn {} {} generateOctaveScript (@var{scriptFileName})
       ##
-      ## Write an Octave script that has the contents of the jupyter notebook
+      ## Write an Octave script that has the contents of the Jupyter Notebook
       ## stored in the @qcode{notebook} attribute to @var{scriptFileName}.
       ##
       ## Non code cells are generated as block comments.
@@ -242,7 +242,7 @@ classdef JupyterNotebook < handle
       ## -*- texinfo -*-
       ## @deftypefn {} {} generateNotebook (@var{notebookFileName})
       ##
-      ## Write the jupyter notebook stored in the @qcode{notebook}
+      ## Write the Jupyter Notebook stored in the @qcode{notebook}
       ## attribute to @var{notebookFileName}.
       ##
       ## The @qcode{notebook} attribute is encoded to JSON text.
@@ -274,20 +274,16 @@ classdef JupyterNotebook < handle
       ## -*- texinfo -*-
       ## @deftypefn {} {} run (@var{cell_index})
       ##
-      ## Run the cell with index @var{cell_index} in the notebook. The
-      ## results are embedded in the object.
+      ## Run the Jupyter Notebook cell with index @var{cell_index}
+      ## and eventually replace previous output cells in the object.
       ##
-      ## The evaluation of the code inside the notebook cells is done
-      ## in a separate context. This context is loaded before running
-      ## the code inside the cell and saved after running it.
+      ## The first Jupyter Notebook cell has the index 1.
       ##
-      ## If the code produces figures, those figures are set hidden,
-      ## saved in a temporary directory @qcode{__octave_jupyter_temp__}
-      ## and removed after being embedded. The temporary directory is
-      ## also removed after running the code.
-      ##
-      ## Your open figures won't be affected by the figures produced by
-      ## the code in the notebook.
+      ## Note: The code evaluation of the Jupyter Notebook cells is done
+      ## in a separate Jupyter Notebook context.  Thus currently open
+      ## figures and workspace variables won't be affected by executing
+      ## this function.  However, current workspace variables cannot be
+      ## accessed either.
       ##
       ## See @code{help JupyterNotebook} for examples.
       ##
@@ -330,22 +326,22 @@ classdef JupyterNotebook < handle
       ##   magics/README.md#plot
       for j = 1 : numel (obj.notebook.cells{cell_index}.source)
         if (strncmpi (obj.notebook.cells{cell_index}.source{j}, "%plot", 5))
-          magics = strsplit (strtrim ( ...
+          magics = strsplit (strtrim (
             obj.notebook.cells{cell_index}.source{j}));
           for i = 1 : numel (magics)
-            if (any (strcmp (magics{i}, {"-f", "--format"})) ...
+            if (any (strcmp (magics{i}, {"-f", "--format"}))
                 && (i < numel (magics)))
               printOptions.imageFormat = magics{i+1};
             endif
-            if (any (strcmp (magics{i}, {"-r", "--resolution"})) ...
+            if (any (strcmp (magics{i}, {"-r", "--resolution"}))
                 && (i < numel (magics)))
               printOptions.resolution = magics{i+1};
             endif
-            if (any (strcmp (magics{i}, {"-w", "--width"})) ...
+            if (any (strcmp (magics{i}, {"-w", "--width"}))
                 && (i < numel (magics)))
               printOptions.width = magics{i+1};
             endif
-            if (any (strcmp (magics{i}, {"-h", "--height"})) ...
+            if (any (strcmp (magics{i}, {"-h", "--height"}))
                 && (i < numel (magics)))
               printOptions.height = magics{i+1};
             endif
@@ -363,7 +359,7 @@ classdef JupyterNotebook < handle
 
       stream_output = struct ("name", "stdout", "output_type", "stream");
 
-      output_lines = obj.evalCode (strjoin ( ...
+      output_lines = obj.evalCode (strjoin (
         obj.notebook.cells{cell_index}.source));
 
       if (! isempty(output_lines))
@@ -424,19 +420,14 @@ classdef JupyterNotebook < handle
       ## -*- texinfo -*-
       ## @deftypefn {} {} runAll ()
       ##
-      ## Run all cells in the notebook. The results are embedded in the object.
+      ## Run all Jupyter Notebook cells and eventually replace previous
+      ## output cells in the object.
       ##
-      ## The evaluation of the code inside the notebook cells is done
-      ## in a separate context. This context is loaded before running
-      ## the code inside the cell and saved after running it.
-      ##
-      ## If the code produces figures, those figures are set hidden,
-      ## saved in a temporary directory @qcode{__octave_jupyter_temp__},
-      ## and removed after being embedded. The temporary directory is
-      ## also removed after running the code.
-      ##
-      ## Your open figures won't be affected by the figures produced by
-      ## the code in the notebook.
+      ## Note: The code evaluation of the Jupyter Notebook cells is done
+      ## in a separate Jupyter Notebook context.  Thus currently open
+      ## figures and workspace variables won't be affected by executing
+      ## this function.  However, current workspace variables cannot be
+      ## accessed either.
       ##
       ## See @code{help JupyterNotebook} for examples.
       ##
@@ -446,7 +437,7 @@ classdef JupyterNotebook < handle
         print_usage ();
       endif
 
-      for i = 1 : numel (obj.notebook.cells)
+      for i = 1:numel (obj.notebook.cells)
         obj.run(i);
       endfor
 
@@ -460,8 +451,8 @@ classdef JupyterNotebook < handle
     function retVal = evalCode (__obj__, __code__)
 
       ## Evaluate the code string "__code__" using "evalc".
-      ## Before the code is evaluated, the previous notebook context is loaded
-      ## from "__obj__" and the new context is saved to that struct.
+      ## Before the code is evaluated, the previous notebook context is
+      ## loaded from "__obj__" and the new context is saved to that struct.
 
       if (nargin != 2)
         print_usage ();
@@ -479,7 +470,7 @@ classdef JupyterNotebook < handle
       __obj__.loadContext ();
 
       ## Add a statement to detect the value of the variable "ans"
-      __code__ = [__code__ "\nans"];
+      __code__ = [__code__, "\nans"];
 
       retVal = strtrim (evalc (__code__, ["printf (\"error: \"); ", ...
                                           "printf (lasterror.message)"]));
@@ -498,8 +489,8 @@ classdef JupyterNotebook < handle
           __obj__.context.ans = "";
         endif
 
-        ## Delete the output of the additional statement if
-        ## the execution is completed with no errors.
+        ## Delete the output of the additional statement if the execution
+        ## is completed with no errors.
         if (end_index == length (retVal))
           ## Remove the extra new line if there are other outputs with
           ## the "ans" statement output
@@ -566,38 +557,38 @@ classdef JupyterNotebook < handle
 
       ## Check if the resolution is correct
       if (isempty (str2num (printOptions.resolution)))
-        obj.addErrorOutput (cell_index, ...
+        obj.addErrorOutput (cell_index,
                             "A number is required for resolution, not a string");
         return;
       endif
 
       ## Check if the width is correct
       if (isempty (str2num (printOptions.width)))
-        obj.addErrorOutput (cell_index, ...
+        obj.addErrorOutput (cell_index,
                             "A number is required for width, not a string");
         return;
       endif
 
       ## Check if the height is correct
       if (isempty (str2num (printOptions.height)))
-        obj.addErrorOutput (cell_index, ...
+        obj.addErrorOutput (cell_index,
                             "A number is required for height, not a string");
         return;
       endif
 
       switch (lower (printOptions.imageFormat))
         case "png"
-          display_output = obj.embed_png_jpg_image (figHandle, ...
+          display_output = obj.embed_png_jpg_image (figHandle,
                                                     printOptions, "png");
         case "jpg"
-          display_output = obj.embed_png_jpg_image (figHandle, ...
+          display_output = obj.embed_png_jpg_image (figHandle,
                                                     printOptions, "jpg");
         case "svg"
           display_output = obj.embed_svg_image (figHandle, printOptions);
         otherwise
-          obj.addErrorOutput (cell_index, ...
-                              ["Cannot embed the \'" ...
-                               printOptions.imageFormat "\' image format\n"]);
+          obj.addErrorOutput (cell_index, ["Cannot embed the \'", ...
+                                           printOptions.imageFormat, ...
+                                           "\' image format\n"]);
           return;
       endswitch
 
@@ -615,7 +606,7 @@ classdef JupyterNotebook < handle
       endif
 
       image_path = fullfile ("__octave_jupyter_temp__", ["temp.", fmt]);
-      print (figHandle, image_path, ["-d", fmt], ...
+      print (figHandle, image_path, ["-d", fmt],
              ["-r" printOptions.resolution]);
 
       dstruct.output_type = "display_data";
@@ -674,9 +665,10 @@ classdef JupyterNotebook < handle
 
 endclassdef
 
+
 ## Test running a single cell
 %!test
-%! n = JupyterNotebook ("../examples/octave_kernel.ipynb");
+%! n = JupyterNotebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
 %!
 %! ## Test embedding images
 %! n.run (2);
@@ -692,7 +684,7 @@ endclassdef
 
 ## Test running all cells
 %!test
-%! n = JupyterNotebook ("../examples/octave_kernel.ipynb");
+%! n = JupyterNotebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
 %! n.runAll ();
 %!
 %! ## Test embedding images
@@ -712,7 +704,8 @@ endclassdef
 
 ## Test plot magic
 %!test
-%! n = JupyterNotebook ("../examples/plot_magic_and_errors.ipynb");
+%! n = JupyterNotebook (fullfile ("..", "examples",
+%!                                "plot_magic_and_errors.ipynb"));
 %!
 %! ## PNG format
 %! n.run (1);
@@ -737,7 +730,8 @@ endclassdef
 
 ## Test errors
 %!test
-%! n = JupyterNotebook ("../examples/plot_magic_and_errors.ipynb");
+%! n = JupyterNotebook (fullfile ("..", "examples",
+%!                                "plot_magic_and_errors.ipynb"));
 %!
 %! ## Wrong resolution
 %! n.run (4);
