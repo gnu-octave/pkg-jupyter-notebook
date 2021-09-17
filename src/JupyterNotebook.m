@@ -668,102 +668,178 @@ endclassdef
 
 ## Test running a single cell
 %!test
-%! n = JupyterNotebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
+%! visibility = get (0, "defaultfigurevisible");
+%! toolkit = graphics_toolkit ();
+%! unwind_protect
+%!   if (! __have_feature__ ("QT_OFFSCREEN")
+%!       || ! strcmp (graphics_toolkit (), "qt"))
+%!     try
+%!       graphics_toolkit ("gnuplot");
+%!     catch
+%!       ## The system doesn't support gnuplot for drawing hidden
+%!       ## figures.  Just return and have test marked as passing.
+%!       return;
+%!     end_try_catch
+%!   endif
+%!   set (0, "defaultfigurevisible", "off");
 %!
-%! ## Test embedding images
-%! n.run (2);
-%! assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
-%! assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/png"));
-%! assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
-%!         {"<IPython.core.display.Image object>"});
-%!
-%! ## Test running non-code cells
-%! markdown_cell = n.notebook.cells{1};
-%! n.run (1);
-%! assert (markdown_cell, n.notebook.cells{1});
+%!   n = JupyterNotebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
+%!  
+%!   ## Test embedding images
+%!   n.run (2);
+%!   assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
+%!   assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/png"));
+%!   assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
+%!           {"<IPython.core.display.Image object>"});
+%!  
+%!   ## Test running non-code cells
+%!   markdown_cell = n.notebook.cells{1};
+%!   n.run (1);
+%!   assert (markdown_cell, n.notebook.cells{1});
+%! unwind_protect_cleanup
+%!   set (0, "defaultfigurevisible", visibility);
+%!   graphics_toolkit (toolkit);
+%! end_unwind_protect
 
 ## Test running all cells
 %!test
-%! n = JupyterNotebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
-%! n.runAll ();
+%! visibility = get (0, "defaultfigurevisible");
+%! toolkit = graphics_toolkit ();
+%! unwind_protect
+%!   if (! __have_feature__ ("QT_OFFSCREEN")
+%!       || ! strcmp (graphics_toolkit (), "qt"))
+%!     try
+%!       graphics_toolkit ("gnuplot");
+%!     catch
+%!       ## The system doesn't support gnuplot for drawing hidden
+%!       ## figures.  Just return and have test marked as passing.
+%!       return;
+%!     end_try_catch
+%!   endif
+%!   set (0, "defaultfigurevisible", "off");
 %!
-%! ## Test embedding images
-%! assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
-%! assert (isfield (n.notebook.cells{3}.outputs{1}.data, "image/png"));
-%! assert (getfield (n.notebook.cells{3}.outputs{1}.data, "text/plain"),
-%!         {"<IPython.core.display.Image object>"});
-%!
-%! ## Test running non-code cells
-%! markdown_cell = n.notebook.cells{1};
-%! n.run (1);
-%! assert (markdown_cell, n.notebook.cells{1});
-%!
-%! ## Test embedding textual output
-%! assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
-%! assert (n.notebook.cells{6}.outputs{1}.name, "stdout");
+%!   n = JupyterNotebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
+%!   n.runAll ();
+%!  
+%!   ## Test embedding images
+%!   assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
+%!   assert (isfield (n.notebook.cells{3}.outputs{1}.data, "image/png"));
+%!   assert (getfield (n.notebook.cells{3}.outputs{1}.data, "text/plain"),
+%!           {"<IPython.core.display.Image object>"});
+%!  
+%!   ## Test running non-code cells
+%!   markdown_cell = n.notebook.cells{1};
+%!   n.run (1);
+%!   assert (markdown_cell, n.notebook.cells{1});
+%!  
+%!   ## Test embedding textual output
+%!   assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
+%!   assert (n.notebook.cells{6}.outputs{1}.name, "stdout");
+%! unwind_protect_cleanup
+%!   set (0, "defaultfigurevisible", visibility);
+%!   graphics_toolkit (toolkit);
+%! end_unwind_protect
 
 ## Test plot magic
 %!test
-%! n = JupyterNotebook (fullfile ("..", "examples",
-%!                                "plot_magic_and_errors.ipynb"));
+%! visibility = get (0, "defaultfigurevisible");
+%! toolkit = graphics_toolkit ();
+%! unwind_protect
+%!   if (! __have_feature__ ("QT_OFFSCREEN")
+%!       || ! strcmp (graphics_toolkit (), "qt"))
+%!     try
+%!       graphics_toolkit ("gnuplot");
+%!     catch
+%!       ## The system doesn't support gnuplot for drawing hidden
+%!       ## figures.  Just return and have test marked as passing.
+%!       return;
+%!     end_try_catch
+%!   endif
+%!   set (0, "defaultfigurevisible", "off");
 %!
-%! ## PNG format
-%! n.run (1);
-%! assert (n.notebook.cells{1}.outputs{1}.output_type, "display_data")
-%! assert (isfield (n.notebook.cells{1}.outputs{1}.data, "image/png"));
-%! assert (getfield (n.notebook.cells{1}.outputs{1}.data, "text/plain"),
-%!         {"<IPython.core.display.Image object>"});
-%!
-%! ## SVG format
-%! n.run (2);
-%! assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
-%! assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/svg+xml"));
-%! assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
-%!         {"<IPython.core.display.SVG object>"});
-%!
-%! ## JPG format
-%! n.run (3);
-%! assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
-%! assert (isfield (n.notebook.cells{3}.outputs{1}.data, "image/jpeg"));
-%! assert (getfield (n.notebook.cells{3}.outputs{1}.data, "text/plain"),
-%!         {"<IPython.core.display.Image object>"});
+%!   n = JupyterNotebook (fullfile ("..", "examples",
+%!                                  "plot_magic_and_errors.ipynb"));
+%!  
+%!   ## PNG format
+%!   n.run (1);
+%!   assert (n.notebook.cells{1}.outputs{1}.output_type, "display_data")
+%!   assert (isfield (n.notebook.cells{1}.outputs{1}.data, "image/png"));
+%!   assert (getfield (n.notebook.cells{1}.outputs{1}.data, "text/plain"),
+%!           {"<IPython.core.display.Image object>"});
+%!  
+%!   ## SVG format
+%!   n.run (2);
+%!   assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
+%!   assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/svg+xml"));
+%!   assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
+%!           {"<IPython.core.display.SVG object>"});
+%!  
+%!   ## JPG format
+%!   n.run (3);
+%!   assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
+%!   assert (isfield (n.notebook.cells{3}.outputs{1}.data, "image/jpeg"));
+%!   assert (getfield (n.notebook.cells{3}.outputs{1}.data, "text/plain"),
+%!           {"<IPython.core.display.Image object>"});
+%! unwind_protect_cleanup
+%!   set (0, "defaultfigurevisible", visibility);
+%!   graphics_toolkit (toolkit);
+%! end_unwind_protect
 
 ## Test errors
 %!test
-%! n = JupyterNotebook (fullfile ("..", "examples",
-%!                                "plot_magic_and_errors.ipynb"));
+%! visibility = get (0, "defaultfigurevisible");
+%! toolkit = graphics_toolkit ();
+%! unwind_protect
+%!   if (! __have_feature__ ("QT_OFFSCREEN")
+%!       || ! strcmp (graphics_toolkit (), "qt"))
+%!     try
+%!       graphics_toolkit ("gnuplot");
+%!     catch
+%!       ## The system doesn't support gnuplot for drawing hidden
+%!       ## figures.  Just return and have test marked as passing.
+%!       return;
+%!     end_try_catch
+%!   endif
+%!   set (0, "defaultfigurevisible", "off");
 %!
-%! ## Wrong resolution
-%! n.run (4);
-%! assert (n.notebook.cells{4}.outputs{1}.output_type, "stream")
-%! assert (n.notebook.cells{4}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{4}.outputs{1}.text,
-%!         {"A number is required for resolution, not a string"});
-%!
-%! ## Wrong width
-%! n.run (5);
-%! assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
-%! assert (n.notebook.cells{5}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{5}.outputs{1}.text,
-%!         {"A number is required for width, not a string"});
-%!
-%! ## Wrong height
-%! n.run (6);
-%! assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
-%! assert (n.notebook.cells{6}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{6}.outputs{1}.text,
-%!         {"A number is required for height, not a string"});
-%!
-%! ## Empty figure
-%! n.run (7);
-%! assert (n.notebook.cells{7}.outputs{1}.output_type, "stream")
-%! assert (n.notebook.cells{7}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{7}.outputs{1}.text,
-%!         {"The figure is empty!"});
-%!
-%! ## Wrong format
-%! n.run (8);
-%! assert (n.notebook.cells{8}.outputs{1}.output_type, "stream")
-%! assert (n.notebook.cells{8}.outputs{1}.name, "stderr");
-%! assert (n.notebook.cells{8}.outputs{1}.text,
-%!         {"Cannot embed the 'pdf' image format\n"});
+%!   n = JupyterNotebook (fullfile ("..", "examples",
+%!                                  "plot_magic_and_errors.ipynb"));
+%!  
+%!   ## Wrong resolution
+%!   n.run (4);
+%!   assert (n.notebook.cells{4}.outputs{1}.output_type, "stream")
+%!   assert (n.notebook.cells{4}.outputs{1}.name, "stderr");
+%!   assert (n.notebook.cells{4}.outputs{1}.text,
+%!           {"A number is required for resolution, not a string"});
+%!  
+%!   ## Wrong width
+%!   n.run (5);
+%!   assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
+%!   assert (n.notebook.cells{5}.outputs{1}.name, "stderr");
+%!   assert (n.notebook.cells{5}.outputs{1}.text,
+%!           {"A number is required for width, not a string"});
+%!  
+%!   ## Wrong height
+%!   n.run (6);
+%!   assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
+%!   assert (n.notebook.cells{6}.outputs{1}.name, "stderr");
+%!   assert (n.notebook.cells{6}.outputs{1}.text,
+%!           {"A number is required for height, not a string"});
+%!  
+%!   ## Empty figure
+%!   n.run (7);
+%!   assert (n.notebook.cells{7}.outputs{1}.output_type, "stream")
+%!   assert (n.notebook.cells{7}.outputs{1}.name, "stderr");
+%!   assert (n.notebook.cells{7}.outputs{1}.text,
+%!           {"The figure is empty!"});
+%!  
+%!   ## Wrong format
+%!   n.run (8);
+%!   assert (n.notebook.cells{8}.outputs{1}.output_type, "stream")
+%!   assert (n.notebook.cells{8}.outputs{1}.name, "stderr");
+%!   assert (n.notebook.cells{8}.outputs{1}.text,
+%!           {"Cannot embed the 'pdf' image format\n"});
+%! unwind_protect_cleanup
+%!   set (0, "defaultfigurevisible", visibility);
+%!   graphics_toolkit (toolkit);
+%! end_unwind_protect
