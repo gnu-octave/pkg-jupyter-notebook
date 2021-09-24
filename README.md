@@ -1,6 +1,6 @@
 # Octave Jupyter Notebook package
 
-<img src="doc/icon.png" alt="logo" width="80%" style="margin-left:auto; margin-right:auto; display:block;"/>
+<img src="doc/icon.png" alt="logo" width="65%" style="margin-left:auto; margin-right:auto; display:block;"/>
 
 A package to run and fill Jupyter Notebooks within GNU Octave.
 
