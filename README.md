@@ -12,10 +12,10 @@ From the Octave command-line:
 pkg install "https://github.com/gnu-octave/pkg-jupyter-notebook/archive/v1.0.0.tar.gz"
 ```
 
-## JupyterNotebook
+## jupyter_notebook
 
 ```
-notebook_object = JupyterNotebook (notebookFileName)
+notebook_object = jupyter_notebook (notebook_file_name)
 ```
 
 This class has a public attribute `notebook` which is a `struct` representing
@@ -43,11 +43,11 @@ enable advanced notebook manipulations.
 
 ## Methods
 
-The `JupyterNotebook` class supports the following methods.
+The `jupyter_notebook` class supports the following methods.
 
 ### `run (cell_index)`
 
-Run the Jupyter Notebook cell with index @var{cell_index} and eventually
+Run the Jupyter Notebook cell with index `cell_index` and eventually
 replace previous output cells in the object.
 
 The first Jupyter Notebook cell has the index 1.
@@ -57,7 +57,7 @@ separate Jupyter Notebook context.  Thus currently open figures and workspace
 variables won't be affected by executing this function.  However, current
 workspace variables cannot be accessed either.
 
-### `runAll ()`
+### `run_all ()`
 
 Run all Jupyter Notebook cells and eventually replace previous output cells in
 the object.
@@ -67,16 +67,16 @@ separate Jupyter Notebook context.  Thus currently open figures and workspace
 variables won't be affected by executing this function.  However, current
 workspace variables cannot be accessed either.
 
-### `generateNotebook (notebookFileName)`
+### `generate_notebook (notebook_file_name)`
 
-Write the jupyter notebook stored in the `notebook` attribute to `notebookFileName`.
+Write the jupyter notebook stored in the `notebook` attribute to `notebook_file_name`.
 
 The `notebook` attribute is encoded to JSON text.
 
-### `generateOctaveScript (scriptFileName)`
+### `generate_octave_script (script_file_name)`
 
 Write an Octave script that has the contents of the Jupyter Notebook stored
-in the `notebook` attribute to `scriptFileName`.
+in the `notebook` attribute to `script_file_name`.
 
 Non code cells are generated as block comments.
 
@@ -89,16 +89,16 @@ The outputs of the following examples are shown using this notebook:
 
 ```
 ## Instantiate an object from the notebook file
-notebook = JupyterNotebook("myNotebook.ipynb")
+notebook = jupyter_notebook("myNotebook.ipynb")
 => notebook =
 
-    <object JupyterNotebook>
+    <object jupyter_notebook>
 
 ## Run the code and embed the results in the notebook attribute
-notebook.runAll()
+notebook.run_all()
 
 ## Generate the new notebook by overwriting the original notebook
-notebook.generateNotebook("myNotebook.ipynb")
+notebook.generate_notebook("myNotebook.ipynb")
 ```
 
 This is the generated notebook:
@@ -108,16 +108,16 @@ This is the generated notebook:
 
 ```
 ## Instantiate an object from the notebook file
-notebook = JupyterNotebook("myNotebook.ipynb")
+notebook = jupyter_notebook("myNotebook.ipynb")
 => notebook =
 
-    <object JupyterNotebook>
+    <object jupyter_notebook>
 
 ## Run the code and embed the results in the notebook attribute
 notebook.run(3)
 
 ## Generate the new notebook in a new file
-notebook.generateNotebook("myNewNotebook.ipynb")
+notebook.generate_notebook("myNewNotebook.ipynb")
 ```
 
 This is the generated notebook:
@@ -127,13 +127,13 @@ This is the generated notebook:
 
 ```
 ## Instantiate an object from the notebook file
-notebook = JupyterNotebook("myNotebook.ipynb")
+notebook = jupyter_notebook("myNotebook.ipynb")
 => notebook =
 
-    <object JupyterNotebook>
+    <object jupyter_notebook>
 
 ## Generate the octave script
-notebook.generateOctaveScript("myScript.m")
+notebook.generate_octave_script("myScript.m")
 ```
 
 This is the generated script:
