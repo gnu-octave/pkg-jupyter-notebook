@@ -18,9 +18,9 @@
 classdef jupyter_notebook < handle
 
   ## -*- texinfo -*-
-  ## @deftypefn  {} {@var{notebook} =} jupyter_notebook (@var{notebookFileName})
+  ## @deftypefn  {} {@var{notebook} =} jupyter_notebook (@var{notebook_file_name})
   ##
-  ## Run and fill the Jupyter Notebook in @var{notebookFileName} within
+  ## Run and fill the Jupyter Notebook in @var{notebook_file_name} within
   ## GNU Octave.
   ##
   ## Supported are textual and graphical Octave outputs.
@@ -77,9 +77,9 @@ classdef jupyter_notebook < handle
   ##         <object jupyter_notebook>
   ##
   ## ## Run the code and embed the results in the @qcode{notebook} attribute
-  ## notebook.runAll()
+  ## notebook.run_all()
   ## ## Generate the new notebook by overwriting the original notebook
-  ## notebook.generateNotebook("myNotebook.ipynb")
+  ## notebook.generate_notebook("myNotebook.ipynb")
   ## @end group
   ##
   ## @group
@@ -94,7 +94,7 @@ classdef jupyter_notebook < handle
   ## ## Run the code and embed the results in the @qcode{notebook} attribute
   ## notebook.run(2)
   ## ## Generate the new notebook in a new file
-  ## notebook.generateNotebook("myNewNotebook.ipynb")
+  ## notebook.generate_notebook("myNewNotebook.ipynb")
   ## @end group
   ##
   ## @group
@@ -107,7 +107,7 @@ classdef jupyter_notebook < handle
   ##         <object jupyter_notebook>
   ##
   ## ## Generate the octave script
-  ## notebook.generateOctaveScript("myScript.m")
+  ## notebook.generate_octave_script("myScript.m")
   ## @end group
   ## @end example
   ##
@@ -128,17 +128,17 @@ classdef jupyter_notebook < handle
 
   methods
 
-    function obj = jupyter_notebook (notebookFileName)
+    function obj = jupyter_notebook (notebook_file_name)
 
       if (nargin != 1)
         print_usage ();
       endif
 
-      if (! (ischar (notebookFileName) && isrow (notebookFileName)))
-        error ("jupyter_notebook: notebookFileName must be a string");
+      if (! (ischar (notebook_file_name) && isrow (notebook_file_name)))
+        error ("jupyter_notebook: notebook_file_name must be a string");
       endif
 
-      obj.notebook = jsondecode (fileread (notebookFileName),
+      obj.notebook = jsondecode (fileread (notebook_file_name),
                                  "makeValidName", false);
 
       ## Validate the notebook's format according to nbformat: 4.0
@@ -194,13 +194,13 @@ classdef jupyter_notebook < handle
     endfunction
 
 
-    function generateOctaveScript (obj, scriptFileName)
+    function generate_octave_script (obj, script_file_name)
 
       ## -*- texinfo -*-
-      ## @deftypefn {} {} generateOctaveScript (@var{scriptFileName})
+      ## @deftypefn {} {} generate_octave_script (@var{script_file_name})
       ##
       ## Write an Octave script that has the contents of the Jupyter Notebook
-      ## stored in the @qcode{notebook} attribute to @var{scriptFileName}.
+      ## stored in the @qcode{notebook} attribute to @var{script_file_name}.
       ##
       ## Non code cells are generated as block comments.
       ##
@@ -212,11 +212,11 @@ classdef jupyter_notebook < handle
         print_usage ();
       endif
 
-      if (! (ischar (scriptFileName) && isrow (scriptFileName)))
-        error ("jupyter_notebook: scriptFileName must be a string");
+      if (! (ischar (script_file_name) && isrow (script_file_name)))
+        error ("jupyter_notebook: script_file_name must be a string");
       endif
 
-      fhandle = fopen (scriptFileName, "w");
+      fhandle = fopen (script_file_name, "w");
 
       for i = 1:numel (obj.notebook.cells)
         if (strcmp (obj.notebook.cells{i}.cell_type, "markdown"))
@@ -237,13 +237,13 @@ classdef jupyter_notebook < handle
     endfunction
 
 
-    function generateNotebook (obj, notebookFileName)
+    function generate_notebook (obj, notebook_file_name)
 
       ## -*- texinfo -*-
-      ## @deftypefn {} {} generateNotebook (@var{notebookFileName})
+      ## @deftypefn {} {} generate_notebook (@var{notebook_file_name})
       ##
       ## Write the Jupyter Notebook stored in the @qcode{notebook}
-      ## attribute to @var{notebookFileName}.
+      ## attribute to @var{notebook_file_name}.
       ##
       ## The @qcode{notebook} attribute is encoded to JSON text.
       ##
@@ -255,11 +255,11 @@ classdef jupyter_notebook < handle
         print_usage ();
       endif
 
-      if (! (ischar (notebookFileName) && isrow (notebookFileName)))
-        error ("jupyter_notebook: notebookFileName must be a string");
+      if (! (ischar (notebook_file_name) && isrow (notebook_file_name)))
+        error ("jupyter_notebook: notebook_file_name must be a string");
       endif
 
-      fhandle = fopen (notebookFileName, "w");
+      fhandle = fopen (notebook_file_name, "w");
 
       fputs (fhandle, jsonencode (obj.notebook, "ConvertInfAndNaN", false,
                                   "PrettyPrint", true));
@@ -415,10 +415,10 @@ classdef jupyter_notebook < handle
     endfunction
 
 
-    function runAll (obj)
+    function run_all (obj)
 
       ## -*- texinfo -*-
-      ## @deftypefn {} {} runAll ()
+      ## @deftypefn {} {} run_all ()
       ##
       ## Run all Jupyter Notebook cells and eventually replace previous
       ## output cells in the object.
@@ -719,7 +719,7 @@ endclassdef
 %!   set (0, "defaultfigurevisible", "off");
 %!
 %!   n = jupyter_notebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
-%!   n.runAll ();
+%!   n.run_all ();
 %!  
 %!   ## Test embedding images
 %!   assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
