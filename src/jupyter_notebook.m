@@ -15,12 +15,13 @@
 ## <https://www.gnu.org/licenses/>.
 
 
-classdef JupyterNotebook < handle
+classdef jupyter_notebook < handle
 
   ## -*- texinfo -*-
-  ## @deftypefn  {} {@var{notebook} =} JupyterNotebook (@var{notebookFileName})
+  ## @deftypefn  {} {@var{notebook} =} jupyter_notebook (@var{notebook_file_name})
+  ## @deftypefnx {} {@var{notebook} =} jupyter_notebook (@var{notebook_file_name}, @var{options})
   ##
-  ## Run and fill the Jupyter Notebook in @var{notebookFileName} within
+  ## Run and fill the Jupyter Notebook in @var{notebook_file_name} within
   ## GNU Octave.
   ##
   ## Supported are textual and graphical Octave outputs.
@@ -31,6 +32,12 @@ classdef JupyterNotebook < handle
   ##
   ## Note: Jupyter Notebook versions (@qcode{nbformat}) lower than 4.0 are
   ## not supported.
+  ##
+  ## The second argument @var{options} is a struct with fields:
+  ## @itemize @bullet
+  ## @item
+  ## @qcode{tmpdir} to set the temporary working directory.
+  ## @end itemize
   ##
   ## @qcode{%plot} magic is supported with the following settings:
   ## @itemize @bullet
@@ -71,43 +78,43 @@ classdef JupyterNotebook < handle
   ## ## Run all cells and generate the filled notebook
   ##
   ## ## Instantiate an object from the notebook file
-  ## notebook = JupyterNotebook("myNotebook.ipynb")
+  ## notebook = jupyter_notebook("myNotebook.ipynb")
   ##     @result{} notebook =
   ##
-  ##         <object JupyterNotebook>
+  ##         <object jupyter_notebook>
   ##
   ## ## Run the code and embed the results in the @qcode{notebook} attribute
-  ## notebook.runAll()
+  ## notebook.run_all()
   ## ## Generate the new notebook by overwriting the original notebook
-  ## notebook.generateNotebook("myNotebook.ipynb")
+  ## notebook.generate_notebook("myNotebook.ipynb")
   ## @end group
   ##
   ## @group
   ## ## Run the second cell and generate the filled notebook
   ##
   ## ## Instantiate an object from the notebook file
-  ## notebook = JupyterNotebook("myNotebook.ipynb")
+  ## notebook = jupyter_notebook("myNotebook.ipynb")
   ##     @result{} notebook =
   ##
-  ##         <object JupyterNotebook>
+  ##         <object jupyter_notebook>
   ##
   ## ## Run the code and embed the results in the @qcode{notebook} attribute
   ## notebook.run(2)
   ## ## Generate the new notebook in a new file
-  ## notebook.generateNotebook("myNewNotebook.ipynb")
+  ## notebook.generate_notebook("myNewNotebook.ipynb")
   ## @end group
   ##
   ## @group
   ## ## Generate an Octave script from a notebook
   ##
   ## ## Instantiate an object from the notebook file
-  ## notebook = JupyterNotebook("myNotebook.ipynb")
+  ## notebook = jupyter_notebook("myNotebook.ipynb")
   ##     @result{} notebook =
   ##
-  ##         <object JupyterNotebook>
+  ##         <object jupyter_notebook>
   ##
   ## ## Generate the octave script
-  ## notebook.generateOctaveScript("myScript.m")
+  ## notebook.generate_octave_script("myScript.m")
   ## @end group
   ## @end example
   ##
@@ -124,21 +131,40 @@ classdef JupyterNotebook < handle
 
     context = struct("ans", "")
 
+    ## Note: This name needs to be stored in a property because it is
+    ## set in the constructor but used in some other methods.  However,
+    ## we want to defer calling tempname() until immediately before
+    ## calling mkdir.  The temporary directory currently created and
+    ## deleted in the constructor and the name is reset to the empty
+    ## string when the directory is deleted.  Another possible
+    ## implementation might be to generate the name and create the
+    ## temporary directory here, then delete it in the class destructor.
+
+    tmpdir = "";
+
   endproperties
 
   methods
 
-    function obj = JupyterNotebook (notebookFileName)
+    function obj = jupyter_notebook (notebook_file_name, options)
 
-      if (nargin != 1)
+      if ((nargin < 1) || (nargin > 2))
         print_usage ();
       endif
 
-      if (! (ischar (notebookFileName) && isrow (notebookFileName)))
-        error ("JupyterNotebook: notebookFileName must be a string");
+      ## Validate options if present.
+      if ((nargin == 2) && ! isstruct (options))
+        error ("jupyter_notebook: options must be a struct");
+      endif
+      if ((nargin == 2) && (isfield (options, "tmpdir")))
+        obj.tmpdir = options.tmpdir;
       endif
 
-      obj.notebook = jsondecode (fileread (notebookFileName),
+      if (! (ischar (notebook_file_name) && isrow (notebook_file_name)))
+        error ("jupyter_notebook: notebook_file_name must be a string");
+      endif
+
+      obj.notebook = jsondecode (fileread (notebook_file_name),
                                  "makeValidName", false);
 
       ## Validate the notebook's format according to nbformat: 4.0
@@ -146,12 +172,12 @@ classdef JupyterNotebook < handle
              && isfield (obj.notebook, "nbformat")
              && isfield (obj.notebook, "nbformat_minor")
              && isfield (obj.notebook, "cells")))
-        error ("JupyterNotebook: not valid format for Jupyter notebooks");
+        error ("jupyter_notebook: not valid format for Jupyter notebooks");
       endif
 
       ## Issue a warning if the format is lower than 4.0
       if (obj.notebook.nbformat < 4)
-        warning (["JupyterNotebook: nbformat versions lower than 4.0 are ", ...
+        warning (["jupyter_notebook: nbformat versions lower than 4.0 are ", ...
                   "not supported"]);
       endif
 
@@ -170,11 +196,11 @@ classdef JupyterNotebook < handle
 
       for i = 1:numel (obj.notebook.cells)
         if (! isfield (obj.notebook.cells{i}, "source"))
-          error ("JupyterNotebook: cells must contain a \"source\" field");
+          error ("jupyter_notebook: cells must contain a \"source\" field");
         endif
 
         if (! isfield (obj.notebook.cells{i}, "cell_type"))
-          error ("JupyterNotebook: cells must contain a \"cell_type\" field");
+          error ("jupyter_notebook: cells must contain a \"cell_type\" field");
         endif
 
         ## Handle when null JSON values are decoded into empty arrays.
@@ -194,17 +220,17 @@ classdef JupyterNotebook < handle
     endfunction
 
 
-    function generateOctaveScript (obj, scriptFileName)
+    function generate_octave_script (obj, script_file_name)
 
       ## -*- texinfo -*-
-      ## @deftypefn {} {} generateOctaveScript (@var{scriptFileName})
+      ## @deftypefn {} {} generate_octave_script (@var{script_file_name})
       ##
       ## Write an Octave script that has the contents of the Jupyter Notebook
-      ## stored in the @qcode{notebook} attribute to @var{scriptFileName}.
+      ## stored in the @qcode{notebook} attribute to @var{script_file_name}.
       ##
       ## Non code cells are generated as block comments.
       ##
-      ## See @code{help JupyterNotebook} for examples.
+      ## See @code{help jupyter_notebook} for examples.
       ##
       ## @end deftypefn
 
@@ -212,11 +238,11 @@ classdef JupyterNotebook < handle
         print_usage ();
       endif
 
-      if (! (ischar (scriptFileName) && isrow (scriptFileName)))
-        error ("JupyterNotebook: scriptFileName must be a string");
+      if (! (ischar (script_file_name) && isrow (script_file_name)))
+        error ("jupyter_notebook: script_file_name must be a string");
       endif
 
-      fhandle = fopen (scriptFileName, "w");
+      fhandle = fopen (script_file_name, "w");
 
       for i = 1:numel (obj.notebook.cells)
         if (strcmp (obj.notebook.cells{i}.cell_type, "markdown"))
@@ -237,17 +263,17 @@ classdef JupyterNotebook < handle
     endfunction
 
 
-    function generateNotebook (obj, notebookFileName)
+    function generate_notebook (obj, notebook_file_name)
 
       ## -*- texinfo -*-
-      ## @deftypefn {} {} generateNotebook (@var{notebookFileName})
+      ## @deftypefn {} {} generate_notebook (@var{notebook_file_name})
       ##
       ## Write the Jupyter Notebook stored in the @qcode{notebook}
-      ## attribute to @var{notebookFileName}.
+      ## attribute to @var{notebook_file_name}.
       ##
       ## The @qcode{notebook} attribute is encoded to JSON text.
       ##
-      ## See @code{help JupyterNotebook} for examples.
+      ## See @code{help jupyter_notebook} for examples.
       ##
       ## @end deftypefn
 
@@ -255,11 +281,11 @@ classdef JupyterNotebook < handle
         print_usage ();
       endif
 
-      if (! (ischar (notebookFileName) && isrow (notebookFileName)))
-        error ("JupyterNotebook: notebookFileName must be a string");
+      if (! (ischar (notebook_file_name) && isrow (notebook_file_name)))
+        error ("jupyter_notebook: notebook_file_name must be a string");
       endif
 
-      fhandle = fopen (notebookFileName, "w");
+      fhandle = fopen (notebook_file_name, "w");
 
       fputs (fhandle, jsonencode (obj.notebook, "ConvertInfAndNaN", false,
                                   "PrettyPrint", true));
@@ -285,7 +311,7 @@ classdef JupyterNotebook < handle
       ## this function.  However, current workspace variables cannot be
       ## accessed either.
       ##
-      ## See @code{help JupyterNotebook} for examples.
+      ## See @code{help jupyter_notebook} for examples.
       ##
       ## @end deftypefn
 
@@ -295,11 +321,11 @@ classdef JupyterNotebook < handle
 
       if (! (isscalar (cell_index) && ! islogical (cell_index)
           && (mod (cell_index, 1) == 0) && (cell_index > 0)))
-        error ("JupyterNotebook: cell_index must be a scalar positive integer");
+        error ("jupyter_notebook: cell_index must be a scalar positive integer");
       endif
 
       if (cell_index > length (obj.notebook.cells))
-        error ("JupyterNotebook: cell_index is out of bound");
+        error ("jupyter_notebook: cell_index is out of bound");
       endif
 
       if (! strcmp (obj.notebook.cells{cell_index}.cell_type, "code"))
@@ -315,7 +341,7 @@ classdef JupyterNotebook < handle
 
       ## Default values for printOptions.
       printOptions.imageFormat = "png";
-      printOptions.resolution = "150";
+      printOptions.resolution = "0";
 
       ## The default width and height in Jupyter notebook
       printOptions.width = "640";
@@ -379,25 +405,34 @@ classdef JupyterNotebook < handle
       fig_ids_new = setdiff (findall (0, "type", "figure"), fig_ids);
 
       if (numel (fig_ids_new) > 0)
-        if (exist ("__octave_jupyter_temp__", "dir"))
+        if (! isempty (obj.tmpdir) && exist (obj.tmpdir, "dir"))
           ## Delete open figures before raising the error.
           for i = 1:numel (fig_ids_new)
             delete (fig_ids_new(i));
           endfor
-          error (["JupyterNotebook: temporary directory ", ...
-                  "__octave_jupyter_temp__ exists.  Please remove it ", ...
-                  "manually."]);
+          error (["JupyterNotebook: temporary directory %s exists.  ", ...
+                  "Please remove it manually."], obj.tmpdir);
         endif
 
-        [status, msg, msgid] = mkdir ("__octave_jupyter_temp__");
+        if (isempty (obj.tmpdir))
+          obj.tmpdir = tempname ();
+          clear_tmpdir_property = true;
+        else
+          clear_tmpdir_property = false;
+        endif
+        [status, msg, msgid] = mkdir (obj.tmpdir);
         if (status == 0)
           ## Delete open figures before raising the error.
           for i = 1 : numel (fig_ids_new)
             delete (fig_ids_new(i));
           endfor
-          error (["JupyterNotebook: Cannot create a temporary directory. ", ...
+          error (["jupyter_notebook: Cannot create a temporary directory. ", ...
                   msg]);
         endif
+
+        ## FIXME: Maybe it would be better for these cleanup actions to
+        ## happen in an onCleanup object or unwind_protect block so that
+        ## they will be executed no matter how we exit this function?
 
         for i = 1:numel (fig_ids_new)
           figure (fig_ids_new(i), "visible", "off");
@@ -405,20 +440,23 @@ classdef JupyterNotebook < handle
           delete (fig_ids_new(i));
         endfor
 
-        [status, msg, msgid] = rmdir ("__octave_jupyter_temp__");
+        [status, msg, msgid] = rmdir (obj.tmpdir);
         if (status == 0)
-          error (["JupyterNotebook: Cannot delete the temporary ", ...
+          error (["jupyter_notebook: Cannot delete the temporary ", ...
                   "directory. ", msg]);
+        endif
+        if (clear_tmpdir_property)
+          obj.tmpdir = "";
         endif
       endif
 
     endfunction
 
 
-    function runAll (obj)
+    function run_all (obj)
 
       ## -*- texinfo -*-
-      ## @deftypefn {} {} runAll ()
+      ## @deftypefn {} {} run_all ()
       ##
       ## Run all Jupyter Notebook cells and eventually replace previous
       ## output cells in the object.
@@ -429,7 +467,7 @@ classdef JupyterNotebook < handle
       ## this function.  However, current workspace variables cannot be
       ## accessed either.
       ##
-      ## See @code{help JupyterNotebook} for examples.
+      ## See @code{help jupyter_notebook} for examples.
       ##
       ## @end deftypefn
 
@@ -464,7 +502,7 @@ classdef JupyterNotebook < handle
       endif
 
       if (! (ischar (__code__) && isrow (__code__)))
-        error ("JupyterNotebook: code must be a string");
+        error ("jupyter_notebook: code must be a string");
       endif
 
       __obj__.loadContext ();
@@ -605,7 +643,7 @@ classdef JupyterNotebook < handle
         mime = "image/jpeg";
       endif
 
-      image_path = fullfile ("__octave_jupyter_temp__", ["temp.", fmt]);
+      image_path = fullfile (obj.tmpdir, ["temp.", fmt]);
       print (figHandle, image_path, ["-d", fmt],
              ["-r" printOptions.resolution]);
 
@@ -622,7 +660,7 @@ classdef JupyterNotebook < handle
 
     function dstruct = embed_svg_image (obj, figHandle, printOptions)
 
-      image_path = fullfile ("__octave_jupyter_temp__", "temp.svg");
+      image_path = fullfile (obj.tmpdir, "temp.svg");
       print (figHandle, image_path, "-dsvg", ["-r" printOptions.resolution]);
 
       dstruct.output_type = "display_data";
@@ -683,15 +721,15 @@ endclassdef
 %!   endif
 %!   set (0, "defaultfigurevisible", "off");
 %!
-%!   n = JupyterNotebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
-%!  
+%!   n = jupyter_notebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
+%!
 %!   ## Test embedding images
 %!   n.run (2);
 %!   assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
 %!   assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/png"));
 %!   assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
 %!           {"<IPython.core.display.Image object>"});
-%!  
+%!
 %!   ## Test running non-code cells
 %!   markdown_cell = n.notebook.cells{1};
 %!   n.run (1);
@@ -718,20 +756,20 @@ endclassdef
 %!   endif
 %!   set (0, "defaultfigurevisible", "off");
 %!
-%!   n = JupyterNotebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
-%!   n.runAll ();
-%!  
+%!   n = jupyter_notebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
+%!   n.run_all ();
+%!
 %!   ## Test embedding images
 %!   assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
 %!   assert (isfield (n.notebook.cells{3}.outputs{1}.data, "image/png"));
 %!   assert (getfield (n.notebook.cells{3}.outputs{1}.data, "text/plain"),
 %!           {"<IPython.core.display.Image object>"});
-%!  
+%!
 %!   ## Test running non-code cells
 %!   markdown_cell = n.notebook.cells{1};
 %!   n.run (1);
 %!   assert (markdown_cell, n.notebook.cells{1});
-%!  
+%!
 %!   ## Test embedding textual output
 %!   assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
 %!   assert (n.notebook.cells{6}.outputs{1}.name, "stdout");
@@ -757,23 +795,23 @@ endclassdef
 %!   endif
 %!   set (0, "defaultfigurevisible", "off");
 %!
-%!   n = JupyterNotebook (fullfile ("..", "examples",
+%!   n = jupyter_notebook (fullfile ("..", "examples",
 %!                                  "plot_magic_and_errors.ipynb"));
-%!  
+%!
 %!   ## PNG format
 %!   n.run (1);
 %!   assert (n.notebook.cells{1}.outputs{1}.output_type, "display_data")
 %!   assert (isfield (n.notebook.cells{1}.outputs{1}.data, "image/png"));
 %!   assert (getfield (n.notebook.cells{1}.outputs{1}.data, "text/plain"),
 %!           {"<IPython.core.display.Image object>"});
-%!  
+%!
 %!   ## SVG format
 %!   n.run (2);
 %!   assert (n.notebook.cells{2}.outputs{1}.output_type, "display_data")
 %!   assert (isfield (n.notebook.cells{2}.outputs{1}.data, "image/svg+xml"));
 %!   assert (getfield (n.notebook.cells{2}.outputs{1}.data, "text/plain"),
 %!           {"<IPython.core.display.SVG object>"});
-%!  
+%!
 %!   ## JPG format
 %!   n.run (3);
 %!   assert (n.notebook.cells{3}.outputs{1}.output_type, "display_data")
@@ -802,37 +840,37 @@ endclassdef
 %!   endif
 %!   set (0, "defaultfigurevisible", "off");
 %!
-%!   n = JupyterNotebook (fullfile ("..", "examples",
+%!   n = jupyter_notebook (fullfile ("..", "examples",
 %!                                  "plot_magic_and_errors.ipynb"));
-%!  
+%!
 %!   ## Wrong resolution
 %!   n.run (4);
 %!   assert (n.notebook.cells{4}.outputs{1}.output_type, "stream")
 %!   assert (n.notebook.cells{4}.outputs{1}.name, "stderr");
 %!   assert (n.notebook.cells{4}.outputs{1}.text,
 %!           {"A number is required for resolution, not a string"});
-%!  
+%!
 %!   ## Wrong width
 %!   n.run (5);
 %!   assert (n.notebook.cells{5}.outputs{1}.output_type, "stream")
 %!   assert (n.notebook.cells{5}.outputs{1}.name, "stderr");
 %!   assert (n.notebook.cells{5}.outputs{1}.text,
 %!           {"A number is required for width, not a string"});
-%!  
+%!
 %!   ## Wrong height
 %!   n.run (6);
 %!   assert (n.notebook.cells{6}.outputs{1}.output_type, "stream")
 %!   assert (n.notebook.cells{6}.outputs{1}.name, "stderr");
 %!   assert (n.notebook.cells{6}.outputs{1}.text,
 %!           {"A number is required for height, not a string"});
-%!  
+%!
 %!   ## Empty figure
 %!   n.run (7);
 %!   assert (n.notebook.cells{7}.outputs{1}.output_type, "stream")
 %!   assert (n.notebook.cells{7}.outputs{1}.name, "stderr");
 %!   assert (n.notebook.cells{7}.outputs{1}.text,
 %!           {"The figure is empty!"});
-%!  
+%!
 %!   ## Wrong format
 %!   n.run (8);
 %!   assert (n.notebook.cells{8}.outputs{1}.output_type, "stream")
