@@ -9,7 +9,7 @@ The package supports filling both textual and graphical outputs.
 ## Installation
 From the Octave command-line:
 ```
-pkg install "https://github.com/gnu-octave/pkg-jupyter-notebook/archive/v1.0.0.tar.gz"
+pkg install "https://github.com/gnu-octave/pkg-jupyter-notebook/archive/v1.1.0.tar.gz"
 ```
 
 ## jupyter_notebook
