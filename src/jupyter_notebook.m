@@ -703,6 +703,19 @@ classdef jupyter_notebook < handle
 
 endclassdef
 
+%!shared example_dir
+%! ## development path
+%! example_dir = fullfile ("..", "doc", "examples");
+%! if (exist (fullfile (example_dir, "octave_kernel.ipynb"), "file") != 2)
+%!   ## installed package path
+%!   if (isempty (pkg ("list", "jupyter-notebook")))
+%!     error ("jupyter_notebook: cannot detect example directory");
+%!   else
+%!     example_dir = pkg ("list", "jupyter-notebook"){1}.dir;
+%!     example_dir = fullfile (example_dir, "doc", "examples");
+%!   endif
+%! endif
+%! assert (exist (fullfile (example_dir, "octave_kernel.ipynb"), "file"), 2);
 
 ## Test running a single cell
 %!test
@@ -721,7 +734,7 @@ endclassdef
 %!   endif
 %!   set (0, "defaultfigurevisible", "off");
 %!
-%!   n = jupyter_notebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
+%!   n = jupyter_notebook (fullfile (example_dir, "octave_kernel.ipynb"));
 %!
 %!   ## Test embedding images
 %!   n.run (2);
@@ -756,7 +769,7 @@ endclassdef
 %!   endif
 %!   set (0, "defaultfigurevisible", "off");
 %!
-%!   n = jupyter_notebook (fullfile ("..", "examples", "octave_kernel.ipynb"));
+%!   n = jupyter_notebook (fullfile (example_dir, "octave_kernel.ipynb"));
 %!   n.run_all ();
 %!
 %!   ## Test embedding images
@@ -795,7 +808,7 @@ endclassdef
 %!   endif
 %!   set (0, "defaultfigurevisible", "off");
 %!
-%!   n = jupyter_notebook (fullfile ("..", "examples",
+%!   n = jupyter_notebook (fullfile (example_dir, ...
 %!                                  "plot_magic_and_errors.ipynb"));
 %!
 %!   ## PNG format
@@ -840,7 +853,7 @@ endclassdef
 %!   endif
 %!   set (0, "defaultfigurevisible", "off");
 %!
-%!   n = jupyter_notebook (fullfile ("..", "examples",
+%!   n = jupyter_notebook (fullfile (example_dir, ...
 %!                                  "plot_magic_and_errors.ipynb"));
 %!
 %!   ## Wrong resolution
