@@ -58,7 +58,7 @@ The `jupyter_notebook` class supports the following methods.
 
 ### `run (cell_index)`
 
-Run the Jupyter Notebook cell with index @var{cell_index}
+Run the Jupyter Notebook cell with index `cell_index`
 and eventually replace previous output cells in the object.
 
 The first Jupyter Notebook cell has the index 1.
