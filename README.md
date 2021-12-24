@@ -18,7 +18,7 @@ pkg install "https://github.com/gnu-octave/pkg-jupyter-notebook/archive/v1.1.0.t
 notebook_object = jupyter_notebook (notebook_filename, options)
 ```
 
-Run and fill the Jupyter Notebook in file @var{notebook_filename} from
+Run and fill the Jupyter Notebook in file `notebook_filename` from
 within GNU Octave.
 
 Both text and graphical Octave outputs are supported.
