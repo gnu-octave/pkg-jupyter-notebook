@@ -144,7 +144,8 @@ classdef jupyter_notebook < handle
 
     function obj = jupyter_notebook (notebook_filename, options)
 
-      if (nargin < 1)
+      ## Keep check for upper nargin limit (automatically since Octave 7).
+      if ((nargin < 1) || (nargin > 2))
         print_usage ();
       endif
 
