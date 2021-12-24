@@ -15,23 +15,31 @@ pkg install "https://github.com/gnu-octave/pkg-jupyter-notebook/archive/v1.1.0.t
 ## jupyter_notebook
 
 ```
-notebook_object = jupyter_notebook (notebook_file_name, options)
+notebook_object = jupyter_notebook (notebook_filename, options)
 ```
 
-This class has a public attribute `notebook` which is a `struct` representing
-the JSON-decoded Jupyter Notebook.  This attribute is intentionally public to
-enable advanced notebook manipulations.
+Run and fill the Jupyter Notebook in file @var{notebook_filename} from
+within GNU Octave.
 
-**Note:** Jupyter Notebook versions (`nbformat`) lower than 4.0 are not supported.
+Both text and graphical Octave outputs are supported.
 
-The second argument `options` is a struct with fields:
+This class has a public property `notebook` which is a structure
+representing the JSON-decoded Jupyter Notebook.  This property is
+intentionally public to enable advanced notebook manipulations.
+
+**Note:** Jupyter Notebook versions (`nbformat`) lower than 4.0 are not
+supported.
+
+The optional second argument `options` is a struct with fields:
+
 * `tmpdir` to set the temporary working directory.
 
 ## plot magic
 
 `%plot` magic is supported with the following settings:
-* `%plot -f <format>` or `%plot --format <format>`: specifies the image storage
-  format.  Supported formats are:
+
+* `%plot -f <format>` or `%plot --format <format>`: specifies the
+  image storage format.  Supported formats are:
     * PNG (default)
     * SVG (Note: If SVG images do not appear in the notebook,
            it is most related to the Jupyter Notebook security
@@ -50,38 +58,41 @@ The `jupyter_notebook` class supports the following methods.
 
 ### `run (cell_index)`
 
-Run the Jupyter Notebook cell with index @var{cell_index} and eventually
-replace previous output cells in the object.
+Run the Jupyter Notebook cell with index @var{cell_index}
+and eventually replace previous output cells in the object.
 
 The first Jupyter Notebook cell has the index 1.
 
-**Note:** The code evaluation of the Jupyter Notebook cells is done in a
-separate Jupyter Notebook context.  Thus currently open figures and workspace
-variables won't be affected by executing this function.  However, current
-workspace variables cannot be accessed either.
+**Note:** The code evaluation of the Jupyter Notebook cells is done
+in a separate Jupyter Notebook context.  Thus, currently open
+figures and workspace variables won't be affected by executing
+this function.  However, current workspace variables cannot be
+accessed either.
 
 ### `run_all ()`
 
-Run all Jupyter Notebook cells and eventually replace previous output cells in
-the object.
+Run all Jupyter Notebook cells and eventually replace previous
+output cells in the object.
 
-**Note:** The code evaluation of the Jupyter Notebook cells is done in a
-separate Jupyter Notebook context.  Thus currently open figures and workspace
-variables won't be affected by executing this function.  However, current
-workspace variables cannot be accessed either.
+**Note:** The code evaluation of the Jupyter Notebook cells is done
+in a separate Jupyter Notebook context.  Thus, currently open
+figures and workspace variables won't be affected by executing
+this function.  However, current workspace variables cannot be
+accessed either.
 
 ### `generate_notebook (notebook_file_name)`
 
-Write the jupyter notebook stored in the `notebook` attribute to `notebook_file_name`.
+Write the Jupyter Notebook stored in the `notebook`
+attribute to `notebook_file_name`.
 
 The `notebook` attribute is encoded to JSON text.
 
 ### `generate_octave_script (script_file_name)`
 
-Write an Octave script that has the contents of the Jupyter Notebook stored
-in the `notebook` attribute to `script_file_name`.
+Write an Octave script that has the contents of the Jupyter Notebook
+stored in the `notebook` attribute to `script_file_name`.
 
-Non code cells are generated as block comments.
+Non-code cells are generated as block comments.
 
 ## Examples:
 
