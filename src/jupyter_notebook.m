@@ -510,6 +510,12 @@ classdef jupyter_notebook < handle
       retval = strtrim (evalc (__code__, ["printf (\"error: \"); ", ...
                                           "printf (lasterror.message)"]));
 
+      ## Restore __obj__ in case of "clear all".
+      ## Does not work until bug #62077 is resolved.
+      if (exist ("__obj__", "var") != 1)
+        __obj__ = evalin ("caller", "obj");
+      endif
+
       ## Handle the "ans" variable in the context.
       start_index = rindex (retval, "ans =") + 6;
       if (start_index > 6)
