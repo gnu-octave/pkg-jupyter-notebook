@@ -9,4 +9,4 @@ description: Run and fill Jupyter Notebooks within GNU Octave.
  Evaluate long-running Octave Jupyter Notebooks on a computing server
  without permanent browser connection.
 categories: package
-depends: json (>= 1.5.0), octave (< 7)
+depends: octave (< 7.1.0), json (>= 1.5.0)
