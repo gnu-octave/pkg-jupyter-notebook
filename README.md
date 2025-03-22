@@ -1,5 +1,8 @@
 # Octave Jupyter Notebook package
 
+> **This package is already included into Octave core.**
+> The function of this package `jupyter_notebook` exists in Octave version 7 and newer: <https://octave.org/NEWS-7.html#general-improvements>.
+
 <img src="doc/icon.png" alt="logo" width="65%" style="margin-left:auto; margin-right:auto; display:block;"/>
 
 A package to run and fill Jupyter Notebooks within GNU Octave.
@@ -9,7 +12,7 @@ The package supports filling both textual and graphical outputs.
 ## Installation
 From the Octave command-line:
 ```
-pkg install "https://github.com/gnu-octave/pkg-jupyter-notebook/archive/v1.1.0.tar.gz"
+pkg install "https://github.com/gnu-octave/pkg-jupyter-notebook/archive/v1.3.0.tar.gz"
 ```
 
 ## jupyter_notebook
